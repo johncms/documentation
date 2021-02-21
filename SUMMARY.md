@@ -1,8 +1,15 @@
 # Table of contents
 
 * [Введение](README.md)
-* [Начало работы](getting-started/README.md)
-  * [Установка и системные требования](getting-started/ustanovka-i-sistemnye-trebovaniya.md)
-  * [Настройка](getting-started/nastroika.md)
-  * [Структура файлов/папок](getting-started/struktura-failov-papok.md)
+
+## Начало работы
+
+* [Установка и системные требования](nachalo-raboty/ustanovka-i-sistemnye-trebovaniya.md)
+* [Настройка](nachalo-raboty/nastroika.md)
+* [Структура файлов/папок](nachalo-raboty/struktura-failov-papok.md)
+
+## Модули
+
+* [Структура модуля](moduli/struktura-modulya.md)
+* [Создание модуля](moduli/sozdanie-modulya.md)
 
