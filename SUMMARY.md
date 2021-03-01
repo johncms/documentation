@@ -14,3 +14,7 @@
 * [Создание модуля](moduli/sozdanie-modulya.md)
 * [Маршрутизация \(роутинг\)](moduli/marshrutizaciya-routing.md)
 
+## Шаблоны
+
+* [Структура стандартного шаблона](shablony/struktura-standartnogo-shablona.md)
+
