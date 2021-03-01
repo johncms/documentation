@@ -12,4 +12,5 @@
 
 * [Структура модуля](moduli/struktura-modulya.md)
 * [Создание модуля](moduli/sozdanie-modulya.md)
+* [Маршрутизация \(роутинг\)](moduli/marshrutizaciya-routing.md)
 
