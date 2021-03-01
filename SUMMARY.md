@@ -17,4 +17,10 @@
 ## Шаблоны
 
 * [Структура стандартного шаблона](shablony/struktura-standartnogo-shablona.md)
+* [Изменение стилей шаблона](shablony/izmenenie-stilei-shablona.md)
+* [Создание собственного шаблона](shablony/sozdanie-sobstvennogo-shablona.md)
+
+## Мультиязычность
+
+* [Перевод JohnCMS на другие языки](multiyazychnost/untitled.md)
 
