@@ -10,12 +10,12 @@
 
 ## Общие сведения
 
-* [Конфигурационные файлы \(configs\)](obshie-svedeniya/untitled.md)
-* [Шаблоны электронных сообщений \(email\)](obshie-svedeniya/untitled-1.md)
-* [Отправка электронной почты \(email\)](obshie-svedeniya/untitled-2.md)
-* [Работа с уведомлениями](obshie-svedeniya/untitled-3.md)
-* [Работа с запросом \(Request\)](obshie-svedeniya/untitled-4.md)
-* [Проблемы и их решение](obshie-svedeniya/untitled-5.md)
+* [Проблемы и их решение](obshie-svedeniya/problemy-i-ikh-reshenie.md)
+* [Конфигурационные файлы \(configs\)](obshie-svedeniya/konfiguracionnye-faily-configs.md)
+* [Шаблоны электронных сообщений \(email\)](obshie-svedeniya/shablony-elektronnykh-soobshenii-email.md)
+* [Отправка электронной почты \(email\)](obshie-svedeniya/otpravka-elektronnoi-pochty-email.md)
+* [Работа с уведомлениями](obshie-svedeniya/rabota-s-uvedomleniyami.md)
+* [Работа с запросом \(Request\)](obshie-svedeniya/rabota-s-zaprosom-request.md)
 * [Валидация](obshie-svedeniya/validaciya/README.md)
   * [NotEmpty - Не пустое значение](obshie-svedeniya/validaciya/notempty-ne-pustoe-znachenie.md)
   * [StringLength - длина строки](obshie-svedeniya/validaciya/stringlength-dlina-stroki.md)
@@ -42,15 +42,15 @@
 
 ## Мультиязычность
 
-* [Перевод JohnCMS на другие языки](multiyazychnost/untitled.md)
+* [Перевод JohnCMS на другие языки](multiyazychnost/perevod-johncms-na-drugie-yazyki.md)
 
 ## База данных
 
-* [Настройки подключения к базе данных](baza-dannykh/untitled.md)
-* [Выполнение запросов к базе данных](baza-dannykh/untitled-1.md)
-* [Вставка записей \(insert\)](baza-dannykh/untitled-2.md)
-* [Обновление записей \(update\)](baza-dannykh/untitled-3.md)
-* [Удаление записей \(delete\)](baza-dannykh/untitled-4.md)
+* [Настройки подключения к базе данных](baza-dannykh/nastroiki-podklyucheniya-k-baze-dannykh.md)
+* [Выполнение запросов к базе данных](baza-dannykh/vypolnenie-zaprosov-k-baze-dannykh.md)
+* [Вставка записей \(insert\)](baza-dannykh/vstavka-zapisei-insert.md)
+* [Обновление записей \(update\)](baza-dannykh/obnovlenie-zapisei-update.md)
+* [Удаление записей \(delete\)](baza-dannykh/udalenie-zapisei-delete.md)
 
 ## Eloquent ORM
 
@@ -58,7 +58,7 @@
 
 ## Пользователи
 
-* [Поля \(свойства\) пользователей](polzovateli/untitled.md)
-* [Работа с пользователями в примерах](polzovateli/untitled-1.md)
-* [Работа с текущим авторизованным пользователем](polzovateli/untitled-2.md)
+* [Поля \(свойства\) пользователей](polzovateli/polya-svoistva-polzovatelei.md)
+* [Работа с пользователями в примерах](polzovateli/rabota-s-polzovatelyami-v-primerakh.md)
+* [Работа с текущим авторизованным пользователем](polzovateli/rabota-s-tekushim-avtorizovannym-polzovatelem.md)
 
