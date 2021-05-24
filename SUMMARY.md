@@ -43,6 +43,7 @@
 ## Мультиязычность
 
 * [Перевод JohnCMS на другие языки](multiyazychnost/perevod-johncms-na-drugie-yazyki.md)
+* [Исправление ошибок в переводе](multiyazychnost/ispravlenie-oshibok-v-perevode.md)
 
 ## База данных
 
