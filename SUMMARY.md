@@ -7,6 +7,7 @@
 * [Установка и системные требования](nachalo-raboty/ustanovka-i-sistemnye-trebovaniya.md)
 * [Настройка](nachalo-raboty/nastroika.md)
 * [Структура файлов/папок](nachalo-raboty/struktura-failov-papok.md)
+* [Обновление с 9 версии](nachalo-raboty/obnovlenie-s-9-versii.md)
 
 ## Общие сведения
 
