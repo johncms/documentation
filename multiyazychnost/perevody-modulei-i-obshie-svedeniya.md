@@ -19,8 +19,9 @@ echo __('Hello World');
 
 #### Множественное/единственное число
 
-<pre class="language-php"><code class="lang-php"><strong>echo n__('One apple', '%s apples', 5, 5);
-</strong></code></pre>
+```php
+echo n__('One apple', '%s apples', 5, 5);
+```
 
 В примере выше первым аргументом передается фраза в единственном числе. \
 Вторым аргументом передается фраза во множественном числе. \
