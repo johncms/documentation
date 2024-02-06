@@ -1,95 +1,92 @@
 # Маршрутизация (роутинг)
 
-## **Для чего нужен роутер в JohnCMS?**
+### **Для чего нужен роутер в JohnCMS?**
 
 Как и в других CMS и фреймворках роутер в JohnCMS обрабатывает запрошенный URL адрес и определяет какой модуль запустить для обработки этого запроса.\
 В свою очередь модуль может получить от роутера различные параметры в зависимости от настроек маршрута и использовать для реализации своего функционала.
 
 Перейдем к практической части.
 
-## Где хранятся настройки маршрутизации?
+### Где хранятся настройки маршрутизации?
 
-Настройки для системных модулей JohnCMS хранятся в файле **/config/routes.php**
+Все описания маршрутов хранятся в модулях по следующему пути: **config/routes.php**
 
-Так же система позволяет задавать маршруты для сторонних модулей.\
-Для этого предназначен файл **/config/routes.local.php**
+Пример файла **routes.php**
 
-Почему для маршрутов сторонних модулей используется отдельный файл?\
-Дело в том, что при обновлениях JohnCMS файл **/config/routes.php** может меняться и при очередном обновлении все Ваши изменения в нем, будут утеряны.\
-Чтобы решить эту проблему, используется файл **/config/routes.local.php**
-
-Пример файла **/config/routes.local.php**
-
-{% code title="/config/routes.local.php" %}
+{% code title="config/routes.local.php" %}
 ```php
 <?php
 
 declare(strict_types=1);
 
-/**
- * @var FastRoute\RouteCollector $map
- */
+use Johncms\Contacts\Controllers\ContactseController;
+use Johncms\Router\RouteCollection;
 
-/*
- * /contacts/ - Это адрес страницы по которому будет доступен наш модуль
- * modules/contacts/index.php - Это путь к точке входа в наш модуль
- */
-
-$map->addRoute(['GET', 'POST'], '/contacts/', 'modules/contacts/index.php');
+return function (RouteCollection $router) {
+    $router->get('/contacts/', [ContactseController::class, 'index'])->setName('contacts');
+};
 ```
 {% endcode %}
 
 Давайте теперь рассмотрим детально как работать с роутером и как использовать его в своих модулях?
 
-Возьмём простой пример из примера выше.\
+Возьмём простой пример из кода выше.\
 Маршрут у нас в нем задается такой строкой:
 
-```php
-$map->addRoute(['GET', 'POST'], '/contacts/', 'modules/contacts/index.php');
-```
+<pre class="language-php"><code class="lang-php"><strong>$router->get('/contacts/', [ContactseController::class, 'index'])->setName('contacts');
+</strong></code></pre>
 
 Эта строка говорит роутеру следующее:\
-Если запрос пришел методом GET или POST и он поступил на страницу site.ru/contacts/, то необходимо выполнить файл modules/contacts/index.php\
-Таким образом, когда пользователь переходит по адресу site.ru/contacts/ он видит результат выполнения файла modules/contacts/index.php
+Если запрос пришел методом GET и он поступил на страницу site.ru/contacts/, то необходимо вызвать метод **index** в контроллере **Johncms\Contacts\Controllers\ContactseController**\
+Таким образом, когда пользователь переходит по адресу site.ru/contacts/ он видит те данные, которые вернул метод index.
 
 Давайте рассмотрим более сложные примеры маршрутизации.\
-Для этого давайте изменим наш простой модуль контактов, который мы создавали в предыдущей статье [Создание модуля](https://johncms.com/documentation/create\_module/)
+Для этого давайте изменим наш простой модуль контактов, который мы создавали в предыдущей статье: [Создание модуля](sozdanie-modulya.md)
 
 Откроем файл /config/routes.local.php
 
 Изменим нашу строку маршрута следующим образом:
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{action}/]', 'modules/contacts/index.php');
+$router->get('/contacts/{action?}', [ContactseController::class, 'index'])->setName('contacts');
 ```
 
-Мы добавили в неё дополнительный параметр \[{action}/]\
+Мы добавили в неё дополнительный параметр {action?}\
 Что это значит?\
-Квадратные скобки говорят роутеру, что этот параметр у нас не обязателен (он может быть, а может и не быть).\
+Вопросительный знак сообщает роутеру, что этот параметр не обязателен (он может быть, а может отсутствовать).\
 В фигурных скобках задается название параметра, чтобы модуль смог с ним работать.\
-Слэш мы ставим чтобы ограничить выбор т.е. выбираться будет та часть адреса, которая расположена между /contacts/ и следующим слешем.
+По умолчанию выбираться будет та часть адреса, которая расположена между /contacts/ и следующим слэшем.
 
 Чтобы было понятнее, давайте разберем на примерах.\
 1\. **site.ru/contacts/** - В таком варианте у нас параметр action будет игнорироваться т.к. роутер считает его необязательным и откроет нашу страницу контактов.\
-2\. **site.ru/contacts/moscow** - В таком варианте роутер откроет страницу ошибки 404 т.к. URL у нас не заканчивается обратным слешем, а в настройках маршрута мы явно указали, что если после /contacts/ есть ещё что-то, то обрабатываем этот маршрут только если он заканчивается слешем (/).\
-3\. **site.ru/contacts/moscow/**  - Такой вариант откроет нашу страницу контактов и в модуле будет доступен параметр action. В этом параметре будет содержаться слово "moscow".\
-4\. **site.ru/contacts/new\_york/** - Тоже самое что и в варианте 3, только в параметре action будет "new\_york"\
-5\. **site.ru/contacts/new\_york/test1/** - Выдаст ошибку 404 т.к. роутер видит, что маршрут не подходит нам (содержит больше данных чем нужно для нашего маршрута).
+2\. **site.ru/contacts/moscow**  - Такой вариант откроет нашу страницу контактов и в модуле будет доступен параметр action. В этом параметре будет содержаться слово "moscow".\
+3\. **site.ru/contacts/new\_york** - Тоже самое что и в варианте 3, только в параметре action будет "new\_york"\
+4\. **site.ru/contacts/new\_york/test1/** - Выдаст ошибку 404 т.к. роутер видит, что маршрут не подходит нам (содержит больше данных чем нужно для нашего маршрута).
+
+### Получение параметров маршрута в контроллере
 
 Давайте теперь разберемся как в модуле нам получить параметры, которые мы указываем в роутере.\
-Откроем файл **modules/contacts/index.php**\
-В начале файла после строки **defined('\_IN\_JOHNCMS') || die('Error: restricted access');** вставим следующий код:
+Откроем файл контроллера **Controllers/ContactsController.php**\
+В методе index вставим следующий код
 
-{% code title="modules/contacts/index.php" %}
+{% code title="ContactsController.php" %}
 ```php
-// Получаем массив параметров, которые вернул нам роутер
+<?php
 
-$route = di('route');
-// Выведем их на экран
-d($route);
+declare(strict_types=1);
 
-// Прекратим выполнение скрипта
-exit;
+namespace Johncms\Contacts\Controllers;
+
+class ContactsController
+{
+    public function index(string $action = '')
+    {
+        // Получаем массив параметров, которые вернул нам роутер
+        $route = di('route');
+        // Выведем их на экран
+        dd($route);
+    }
+}
 ```
 {% endcode %}
 
@@ -110,85 +107,96 @@ Array
 Получить этот параметр можно, как вы наверное уже догадались, следующим образом:\
 &#x20;$route\['action']
 
-Давайте усложним маршрут.\
-Откроем файл **/config/routes.local.php**\
-Изменим нашу строку маршрута следующим образом:
+Также в методе контроллера можно указывать одноименные переменные и в таком случае в этих переменных будет содержаться то, что вы указали в параметрах марщрута.
+
+В нашем случае в переменной $action будет содержаться слово moscow.
+
+{% hint style="info" %}
+При автоматическом внедрении переменных в методы контроллеров происходит приведение типов к указанному в сигнатуре метода. Преобразование выполняется только для типов int, float, string, bool. \
+Оригинальные типы можно получить из массива $route = di('route');
+{% endhint %}
+
+### Прочие примеры использования
+
+Указание регулярного выражения для сопоставления маршрута
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{action}/[{id:\d+}/]]', 'modules/contacts/index.php');
+$router->get('/contacts/{page<\d+>}', [ContactseController::class, 'index']);
 ```
 
-В этом параметре мы добавили ещё один необязательный параметр и назвали его id. Через двоеточие мы указали регулярное выражение по которому будем вызывать этот маршрут. Указанное регулярное выражение принимает только цифры.\
-Теперь у нас модуль контактов открывается по адресам:\
-site.ru/contacts/\
-site.ru/contacts/moscow/\
-site.ru/contacts/moscow/123456/
+В примере выше регулярное выражение ограничивает тип параметра page до числа. Если после строки /contacts/ будут буквы - маршрут не будет сопоставлен и отобразится 404 страница.
 
-Вместо слова moscow может быть любое слово, а вместо 123456 может быть любое число.\
-Перейдем по адресу site.ru/contacts/moscow/123456/ и посмотрим что у нас выведется.
+### Шаблоны популярных выражений
 
-Вывелось следующее:
+Для упрощения ограничений типов параметров в JohnCMS существуют заготовленные регулярные выражения которые можно указать следующим образом:
 
 ```php
-Array
-(
-    [action] => moscow
-    [id] => 123456
-)
+// Число. /contacts/1234
+$router->get('/contacts/{page:number}', [ContactseController::class, 'index']);
+// Буквы, цифры и некоторые знаки. /contacts/my-page_1-2-3
+$router->get('/contacts/{page:slug}', [ContactseController::class, 'index']);
+// Буквы латинского алфафита. /contacts/word
+$router->get('/contacts/{page:word}', [ContactseController::class, 'index']);
+// Путь. /contacts/path/level2/level3/level4/any-level
+$router->get('/contacts/{page:path}', [ContactseController::class, 'index']);
+// Опциональный параметр. /contacts/1 или /contacts
+$router->get('/contacts/{page:number?}', [ContactseController::class, 'index']);
 ```
 
-Как видим, пришел параметр action и id
+### Группы маршрутов
 
-Давайте добавим третий параметр и ещё усложним наш маршрут.\
-Откроем файл /config/routes.local.php\
-Изменим нашу строку маршрута следующим образом:
+Поддерживается возможность объединения маршрутов в группу
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{action}/[{id:\d+}/[{street}/]]]', 'modules/contacts/index.php');
+$router->group('/admin/', function (RouteCollection $routeGroup) {
+    $routeGroup->get('/login/', [AuthController::class, 'index'])->setName('login');
+    $routeGroup->post('/login/authorize/', [AuthController::class, 'authorize'])->setName('authorize');
+})->setNamePrefix('admin.');
 ```
 
-В этом маршруте мы добавили параметр street, он не ограничен только цифрами и может принимать любую строку.\
-Рассмотрим примеры адресов, которые будут доступны для такого маршрута:\
-**site.ru/contacts/**\
-**site.ru/contacts/moscow/**\
-**site.ru/contacts/moscow/123456/**\
-**site.ru/contacts/moscow/123456/sadovaya/**
+В примере описанном выше будут обрабатываться следующие ссылки:\
+/admin/login/\
+/admin/login/authorize/
 
-Перейдем по адресу:\
-**site.ru/contacts/moscow/123456/sadovaya/**
+Имена маршрутов так же будут иметь префикс admin. (admin.login, admin.authorize)
 
-Отобразилось следующее:
+### Генерация URL по имени маршрута
+
+При объявлении маршрута можно указывать его имя с помощью метода ->setName('routeName').\
+Далее это имя можно использовать для генерации ссылок:
 
 ```php
-Array
-(
-    [action] => moscow
-    [id] => 123456
-    [street] => sadovaya
-)
+echo route('admin.login'); // /admin/login/
+echo route('admin.authorize'); // /admin/login/authorize/
 ```
 
-Давайте переименуем параметр action в city чтобы на различных примерах посмотреть на что влияет это название
+Можно так же генерировать маршруты с параметрами:
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{city}/[{id:\d+}/[{street}/]]]', 'modules/contacts/index.php');
+$router->get('/contacts/{action?}', [ContactseController::class, 'index'])->setName('contacts');
+echo route('contacts', ['action' => 'action-name']); // /contacts/action-name
 ```
 
-Перейдем по тому же адресу:\
-site.ru/contacts/moscow/123456/sadovaya/
-
-Получим результат:
+### Добавление middleware
 
 ```php
-Array
-(
-    [city] => moscow
-    [id] => 123456
-    [street] => sadovaya
-)
+// Для одного маршрута
+$router->get('/admin/', [DashboardController::class, 'index'])
+    ->setName('admin.dashboard')
+    ->addMiddleware(AdminAuthorizedUserMiddleware::class)
+    ->addMiddleware(HasAnyRoleMiddleware::class);
+
+// Для группы
+$router->group('/admin/', function (RouteCollection $routeGroup) {
+    $routeGroup->get('/login/', [AuthController::class, 'index'])->setName('admin.login');
+    $routeGroup->post('/login/authorize/', [AuthController::class, 'authorize'])->setName('admin.authorize');
+})->addMiddleware(AdminUnauthorizedUserMiddleware::class);
 ```
 
-Как видим в результате тоже поменялось название параметра.
+Middleware будут выполняться в следующем порядке:
 
-Мы рассмотрели наиболее частые варианты использования маршрутизации и надеемся дальше вы сможете самостоятельно строить ещё более сложные маршруты.\
-С другими примерами маршрутов, вы так же можете ознакомиться в документации к библиотеке [https://github.com/nikic/FastRoute](https://github.com/nikic/FastRoute) , которая используется в JohnCMS для работы с маршрутами.
+1. Глобальные для всех маршрутов (из конфигов)
+2. Для группы
+3. Для конкретных маршрутов
+
+Мы рассмотрели наиболее частые варианты использования маршрутизации и надеемся дальше вы сможете самостоятельно строить ещё более сложные маршруты.
