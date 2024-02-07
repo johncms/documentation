@@ -126,7 +126,37 @@ $router->get('/contacts/{page<\d+>}', [ContactseController::class, 'index']);
 
 В примере выше регулярное выражение ограничивает тип параметра page до числа. Если после строки /contacts/ будут буквы - маршрут не будет сопоставлен и отобразится 404 страница.
 
-### Шаблоны популярных выражений
+#### Установка метода запроса
+
+Роутер позволяет задавать методы для которых будет доступен маршрут.
+
+```php
+// GET
+$router->get('/', ['class', 'method']);
+
+// POST
+$router->post('/', ['class', 'method']);
+
+// DELETE
+$router->delete('/', ['class', 'method']);
+
+// HEAD
+$router->head('/', ['class', 'method']);
+
+// OPTIONS
+$router->options('/', ['class', 'method']);
+
+// PATCH
+$router->patch('/', ['class', 'method']);
+
+// PUT
+$router->put('/', ['class', 'method']);
+
+// Несколько методов сразу
+$router->map(['GET', 'POST', 'DELETE'], '/', ['class', 'method']);
+```
+
+#### Шаблоны популярных выражений
 
 Для упрощения ограничений типов параметров в JohnCMS существуют заготовленные регулярные выражения которые можно указать следующим образом:
 
@@ -146,7 +176,7 @@ $router->get('/contacts/{page:path}', [ContactseController::class, 'index']);
 $router->get('/contacts/{page:number?}', [ContactseController::class, 'index']);
 </code></pre>
 
-### Группы маршрутов
+#### Группы маршрутов
 
 Поддерживается возможность объединения маршрутов в группу
 
@@ -163,7 +193,7 @@ $router->group('/admin/', function (RouteCollection $routeGroup) {
 
 Имена маршрутов так же будут иметь префикс admin. (admin.login, admin.authorize)
 
-### Генерация URL по имени маршрута
+#### Генерация URL по имени маршрута
 
 При объявлении маршрута можно указывать его имя с помощью метода ->setName('routeName').\
 Далее это имя можно использовать для генерации ссылок:
@@ -180,7 +210,7 @@ $router->get('/contacts/{action?}', [ContactseController::class, 'index'])->setN
 echo route('contacts', ['action' => 'action-name']); // /contacts/action-name
 ```
 
-### Установка приоритета
+#### Установка приоритета
 
 Бывают случаи когда один адрес может попадать под одно и то же регулярное выражение. Например если у вас есть маршрут с динамическим параметром, но для конкретной страницы которая попадает под этот маршрут вам нужно сделать отдельный контроллер.
 
@@ -191,7 +221,7 @@ $router->get('/path/test-action', ['class2', 'method'])->setPriority(100);
 
 В этом примере URL **/path/test-action** попадает под шаблон первого маршрута, но т.к. мы указали приоритет второго маршрута выше чем первого, второй маршрут отработает раньше.
 
-### Добавление middleware
+#### Добавление middleware
 
 ```php
 // Для одного маршрута
