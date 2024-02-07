@@ -94,7 +94,7 @@ class ContactsController
 
 В браузере у вас отобразится следующий текст:
 
-```php
+```
 Array
 (
     [action] => moscow
@@ -130,18 +130,21 @@ $router->get('/contacts/{page<\d+>}', [ContactseController::class, 'index']);
 
 Для упрощения ограничений типов параметров в JohnCMS существуют заготовленные регулярные выражения которые можно указать следующим образом:
 
-```php
-// Число. /contacts/1234
+<pre class="language-php"><code class="lang-php">// Число. /contacts/1234
 $router->get('/contacts/{page:number}', [ContactseController::class, 'index']);
-// Буквы, цифры и некоторые знаки. /contacts/my-page_1-2-3
-$router->get('/contacts/{page:slug}', [ContactseController::class, 'index']);
+<strong>
+</strong><strong>// Буквы, цифры и некоторые знаки. /contacts/my-page_1-2-3
+</strong>$router->get('/contacts/{page:slug}', [ContactseController::class, 'index']);
+
 // Буквы латинского алфафита. /contacts/word
 $router->get('/contacts/{page:word}', [ContactseController::class, 'index']);
+
 // Путь. /contacts/path/level2/level3/level4/any-level
 $router->get('/contacts/{page:path}', [ContactseController::class, 'index']);
+
 // Опциональный параметр. /contacts/1 или /contacts
 $router->get('/contacts/{page:number?}', [ContactseController::class, 'index']);
-```
+</code></pre>
 
 ### Группы маршрутов
 
@@ -176,6 +179,17 @@ echo route('admin.authorize'); // /admin/login/authorize/
 $router->get('/contacts/{action?}', [ContactseController::class, 'index'])->setName('contacts');
 echo route('contacts', ['action' => 'action-name']); // /contacts/action-name
 ```
+
+### Установка приоритета
+
+Бывают случаи когда один адрес может попадать под одно и то же регулярное выражение. Например если у вас есть маршрут с динамическим параметром, но для конкретной страницы которая попадает под этот маршрут вам нужно сделать отдельный контроллер.
+
+```php
+$router->get('/path/{action}', ['class', 'method'])->setPriority(20);
+$router->get('/path/test-action', ['class2', 'method'])->setPriority(100);
+```
+
+В этом примере URL **/path/test-action** попадает под шаблон первого маршрута, но т.к. мы указали приоритет второго маршрута выше чем первого, второй маршрут отработает раньше.
 
 ### Добавление middleware
 
