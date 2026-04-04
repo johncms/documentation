@@ -90,7 +90,7 @@ return [
 
 {% hint style="info" %}
 Содержимое всех конфигурационных файлов можно получить следующим образом:\
-&#xNAN;**$config = di('config');**\
+**$config = config();**\
 Это вернет содержимое всех конфигурационных файлов из папки **config/autoload**.
 {% endhint %}
 
@@ -144,7 +144,7 @@ Array
 <?php
 
 require 'system/bootstrap.php';
-$config = di('config');
+$config = config();
 
 // Выведем содержимое конфига mail
 d($config['mail']);
