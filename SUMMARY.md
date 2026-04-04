@@ -29,6 +29,11 @@
   * [Ban - Проверка банов](obshie-svedeniya/validaciya/ban-proverka-banov.md)
   * [Captcha - Проверка защитного кода](obshie-svedeniya/validaciya/captcha-proverka-zashitnogo-koda.md)
 
+## Консоль
+
+* [Консольные команды](konsol/konsolnye-komandy.md)
+* [Планировщик задач (schedule)](konsol/planirovshchik-zadach-schedule.md)
+
 ## Шаблоны
 
 * [Структура стандартного шаблона](shablony/struktura-standartnogo-shablona.md)
