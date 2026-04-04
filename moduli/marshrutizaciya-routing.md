@@ -7,195 +7,205 @@ metaLinks:
 
 # Маршрутизация (роутинг)
 
-## **Для чего нужен роутер в JohnCMS?**
+В JohnCMS маршрутизация построена на `Johncms\Router\RouteCollection` и `Symfony Routing`.
 
-Как и в других CMS и фреймворках роутер в JohnCMS обрабатывает запрошенный URL адрес и определяет какой модуль запустить для обработки этого запроса.\
-В свою очередь модуль может получить от роутера различные параметры в зависимости от настроек маршрута и использовать для реализации своего функционала.
+Эта страница описывает текущий подход: как объявлять маршруты, как подключать middleware, какие бывают обработчики и как происходит dispatch.
 
-Перейдем к практической части.
+## Где описываются маршруты
 
-## Где хранятся настройки маршрутизации?
+* Основные маршруты системы: `config/routes.php`
+* Ваши дополнительные маршруты: `config/routes.local.php`
 
-Настройки для системных модулей JohnCMS хранятся в файле **/config/routes.php**
+Для собственного кода используйте `routes.local.php`, чтобы изменения не терялись при обновлениях.
 
-Так же система позволяет задавать маршруты для сторонних модулей.\
-Для этого предназначен файл **/config/routes.local.php**
+Пример есть в файле `config/routes.local.php.example`.
 
-Почему для маршрутов сторонних модулей используется отдельный файл?\
-Дело в том, что при обновлениях JohnCMS файл **/config/routes.php** может меняться и при очередном обновлении все Ваши изменения в нем, будут утеряны.\
-Чтобы решить эту проблему, используется файл **/config/routes.local.php**
+## Базовый пример маршрута
 
-Пример файла **/config/routes.local.php**
-
-{% code title="/config/routes.local.php" %}
 ```php
 <?php
 
 declare(strict_types=1);
 
-/**
- * @var FastRoute\RouteCollector $map
- */
+/** @var \Johncms\Router\RouteCollection $router */
 
-/*
- * /contacts/ - Это адрес страницы по которому будет доступен наш модуль
- * modules/contacts/index.php - Это путь к точке входа в наш модуль
- */
-
-$map->addRoute(['GET', 'POST'], '/contacts/', 'modules/contacts/index.php');
+$router->get('/contacts', 'modules/contacts/index.php');
+$router->map(['GET', 'POST'], '/feedback', 'modules/feedback/index.php');
 ```
-{% endcode %}
 
-Давайте теперь рассмотрим детально как работать с роутером и как использовать его в своих модулях?
+## Параметры и ограничения
 
-Возьмём простой пример из примера выше.\
-Маршрут у нас в нем задается такой строкой:
+Маршрут может содержать параметры и ограничения через `requirements()`:
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/', 'modules/contacts/index.php');
+$router
+    ->map(['GET', 'POST'], '/contacts/{city}/{id}/{street}', 'modules/contacts/index.php')
+    ->defaults([
+        'city' => null,
+        'id' => null,
+        'street' => null,
+    ])
+    ->requirements([
+        'id' => '\\d+',
+    ]);
 ```
 
-Эта строка говорит роутеру следующее:\
-Если запрос пришел методом GET или POST и он поступил на страницу site.ru/contacts/, то необходимо выполнить файл modules/contacts/index.php\
-Таким образом, когда пользователь переходит по адресу site.ru/contacts/ он видит результат выполнения файла modules/contacts/index.php
+Также поддерживаются пресеты в пути:
 
-Давайте рассмотрим более сложные примеры маршрутизации.\
-Для этого давайте изменим наш простой модуль контактов, который мы создавали в предыдущей статье [Создание модуля](https://johncms.com/documentation/create_module/)
+* `{id:number}`
+* `{article_code:slug}`
+* `{category:path}`
 
-Откроем файл /config/routes.local.php
+Примеры можно посмотреть в `config/routes.php`.
 
-Изменим нашу строку маршрута следующим образом:
+## Middleware на маршрутах
+
+Middleware — это промежуточный обработчик между совпавшим маршрутом и его handler.
+Он получает `Request`, может выполнить проверку/подготовку и передать управление дальше через `$next($request)`.
+
+Обычно middleware используют для:
+
+* проверки доступа (права, авторизация, владение ресурсом)
+* валидации обязательных условий перед действием
+* логирования и других сквозных задач
+
+### Middleware для конкретного маршрута
+
+Добавление middleware к одному маршруту:
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{action}/]', 'modules/contacts/index.php');
+$router
+    ->map(['GET', 'POST'], '/guestbook/clean', App\Guestbook\ClearController::class)
+    ->addMiddleware(App\Guestbook\GuestbookCleanAccessMiddleware::class);
 ```
 
-Мы добавили в неё дополнительный параметр \[{action}/]\
-Что это значит?\
-Квадратные скобки говорят роутеру, что этот параметр у нас не обязателен (он может быть, а может и не быть).\
-В фигурных скобках задается название параметра, чтобы модуль смог с ним работать.\
-Слэш мы ставим чтобы ограничить выбор т.е. выбираться будет та часть адреса, которая расположена между /contacts/ и следующим слешем.
+Можно указывать несколько middleware, они будут вызваны по порядку добавления.
 
-Чтобы было понятнее, давайте разберем на примерах.\
-1\. **site.ru/contacts/** - В таком варианте у нас параметр action будет игнорироваться т.к. роутер считает его необязательным и откроет нашу страницу контактов.\
-2\. **site.ru/contacts/moscow** - В таком варианте роутер откроет страницу ошибки 404 т.к. URL у нас не заканчивается обратным слешем, а в настройках маршрута мы явно указали, что если после /contacts/ есть ещё что-то, то обрабатываем этот маршрут только если он заканчивается слешем (/).\
-3\. **site.ru/contacts/moscow/**  - Такой вариант откроет нашу страницу контактов и в модуле будет доступен параметр action. В этом параметре будет содержаться слово "moscow".\
-4\. **site.ru/contacts/new\_york/** - Тоже самое что и в варианте 3, только в параметре action будет "new\_york"\
-5\. **site.ru/contacts/new\_york/test1/** - Выдаст ошибку 404 т.к. роутер видит, что маршрут не подходит нам (содержит больше данных чем нужно для нашего маршрута).
+### Middleware для группы/коллекции маршрутов
 
-Давайте теперь разберемся как в модуле нам получить параметры, которые мы указываем в роутере.\
-Откроем файл **modules/contacts/index.php**\
-В начале файла после строки **defined('\_IN\_JOHNCMS') || die('Error: restricted access');** вставим следующий код:
-
-{% code title="modules/contacts/index.php" %}
-```php
-// Получаем массив параметров, которые вернул нам роутер
-
-$route = di('route');
-// Выведем их на экран
-d($route);
-
-// Прекратим выполнение скрипта
-exit;
-```
-{% endcode %}
-
-Перейдем по адресу: **site.ru/contacts/moscow/**
-
-В браузере у вас отобразится следующий текст:
+Можно добавить middleware сразу на коллекцию (например, в группе):
 
 ```php
-Array
-(
-    [action] => moscow
-)
+$router->group('/guestbook', static function (\Johncms\Router\RouteCollection $group): void {
+    $group->addMiddleware(App\Guestbook\CommonAccessMiddleware::class);
+
+    $group->get('/edit/{id:number}', App\Guestbook\EditController::class);
+    $group->post('/reply/{id:number}', App\Guestbook\ReplyController::class);
+});
 ```
 
-Как мы видим, параметр, который мы назвали в настройках маршрута action, появился у нас в массиве и содержит слово moscow.
+Такой middleware будет применяться ко всем маршрутам внутри этой коллекции.
 
-В модуле мы можем обратиться к этому параметру и в зависимости от его содержимого управлять логикой работы модуля.\
-Получить этот параметр можно, как вы наверное уже догадались, следующим образом:\
-&#x20;$route\['action']
+### Допустимые типы middleware
 
-Давайте усложним маршрут.\
-Откроем файл **/config/routes.local.php**\
-Изменим нашу строку маршрута следующим образом:
+Middleware может быть:
+
+* классом (получается из контейнера), реализующим `Johncms\Router\MiddlewareInterface`
+* callable
+
+Контракт middleware для класса:
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{action}/[{id:\d+}/]]', 'modules/contacts/index.php');
+public function handle(Request $request, callable $next): mixed;
 ```
 
-В этом параметре мы добавили ещё один необязательный параметр и назвали его id. Через двоеточие мы указали регулярное выражение по которому будем вызывать этот маршрут. Указанное регулярное выражение принимает только цифры.\
-Теперь у нас модуль контактов открывается по адресам:\
-site.ru/contacts/\
-site.ru/contacts/moscow/\
-site.ru/contacts/moscow/123456/
-
-Вместо слова moscow может быть любое слово, а вместо 123456 может быть любое число.\
-Перейдем по адресу site.ru/contacts/moscow/123456/ и посмотрим что у нас выведется.
-
-Вывелось следующее:
+Пример класса middleware:
 
 ```php
-Array
-(
-    [action] => moscow
-    [id] => 123456
-)
+<?php
+
+declare(strict_types=1);
+
+namespace App\Guestbook;
+
+use Johncms\Router\MiddlewareInterface;
+use Johncms\System\Http\Request;
+
+final class GuestbookCleanAccessMiddleware implements MiddlewareInterface
+{
+    public function handle(Request $request, callable $next): mixed
+    {
+        $params = $request->getCurrentRouteParams();
+
+        // Если условие не выполнено, можно прервать цепочку (throw/return)
+        // throw new \Johncms\Exceptions\PageNotFoundException();
+
+        return $next($request);
+    }
+}
 ```
 
-Как видим, пришел параметр action и id
-
-Давайте добавим третий параметр и ещё усложним наш маршрут.\
-Откроем файл /config/routes.local.php\
-Изменим нашу строку маршрута следующим образом:
+Пример callable middleware:
 
 ```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{action}/[{id:\d+}/[{street}/]]]', 'modules/contacts/index.php');
+$router
+    ->get('/contacts', App\Contacts\IndexController::class)
+    ->addMiddleware(static function (\Johncms\System\Http\Request $request, callable $next): mixed {
+        return $next($request);
+    });
 ```
 
-В этом маршруте мы добавили параметр street, он не ограничен только цифрами и может принимать любую строку.\
-Рассмотрим примеры адресов, которые будут доступны для такого маршрута:\
-**site.ru/contacts/**\
-**site.ru/contacts/moscow/**\
-**site.ru/contacts/moscow/123456/**\
-**site.ru/contacts/moscow/123456/sadovaya/**
+### Порядок выполнения
 
-Перейдем по адресу:\
-**site.ru/contacts/moscow/123456/sadovaya/**
+При обработке совпавшего маршрута выполняется цепочка:
 
-Отобразилось следующее:
+1. middleware коллекции/группы
+2. middleware самого маршрута
+3. handler маршрута
 
-```php
-Array
-(
-    [action] => moscow
-    [id] => 123456
-    [street] => sadovaya
-)
-```
+Если middleware не вызывает `$next($request)`, цепочка останавливается и handler не будет вызван.
 
-Давайте переименуем параметр action в city чтобы на различных примерах посмотреть на что влияет это название
+## Какие обработчики поддерживаются
 
-```php
-$map->addRoute(['GET', 'POST'], '/contacts/[{city}/[{id:\d+}/[{street}/]]]', 'modules/contacts/index.php');
-```
+В маршруте можно указать:
 
-Перейдем по тому же адресу:\
-site.ru/contacts/moscow/123456/sadovaya/
+1. Строку с путем legacy-файла (`'modules/contacts/index.php'`)
+2. Invokable-контроллер (`SomeController::class` с `__invoke()`)
+3. Массив `[ControllerClass::class, 'method']`
 
-Получим результат:
+Это обрабатывается в `index.php` через `ActionInvoker` и `MiddlewareDispatcher`.
 
-```php
-Array
-(
-    [city] => moscow
-    [id] => 123456
-    [street] => sadovaya
-)
-```
+## Как работает dispatch
 
-Как видим в результате тоже поменялось название параметра.
+Схема обработки запроса:
 
-Мы рассмотрели наиболее частые варианты использования маршрутизации и надеемся дальше вы сможете самостоятельно строить ещё более сложные маршруты.\
-С другими примерами маршрутов, вы так же можете ознакомиться в документации к библиотеке [https://github.com/nikic/FastRoute](https://github.com/nikic/FastRoute) , которая используется в JohnCMS для работы с маршрутами.
+1. URI нормализуется в `index.php`
+2. `SymfonyRouteMatcher::dispatch()` пытается сопоставить маршрут
+3. При `FOUND`:
+   - route params кладутся в request
+   - запускается цепочка middleware
+   - вызывается handler
+4. При `METHOD_NOT_ALLOWED` возвращается `405 Method Not Allowed`
+5. При `NOT_FOUND` вызывается `pageNotFound()`
+
+## Типовые ошибки
+
+### 404 Not Found
+
+Причины:
+
+* путь не совпадает с шаблоном маршрута
+* route params не прошли `requirements`
+* маршрут не зарегистрирован в `routes.php`/`routes.local.php`
+
+### 405 Method Not Allowed
+
+Причина:
+
+* URL найден, но HTTP-метод не разрешен для маршрута (например, `POST` вместо `GET`).
+
+### Ошибка middleware
+
+Причины:
+
+* middleware-класс не зарегистрирован в контейнере
+* middleware не callable и не реализует `MiddlewareInterface`
+
+В этом случае `MiddlewareDispatcher` выбросит `InvalidArgumentException`.
+
+## См. также
+
+* [Создание модуля](sozdanie-modulya.md)
+* [Структура модуля](struktura-modulya.md)
+* [Конфигурационные файлы (configs)](../obshie-svedeniya/konfiguracionnye-faily-configs.md)
+* [Проблемы и их решение](../obshie-svedeniya/problemy-i-ikh-reshenie.md)
