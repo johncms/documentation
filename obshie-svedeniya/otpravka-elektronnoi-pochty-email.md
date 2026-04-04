@@ -68,9 +68,19 @@ const USE_CRON = false;
 
 Далее необходимо добавить задачу в cron:
 
-**php system/cron.php**
+```bash
+php system/bin/console schedule:run --no-interaction
+```
 
 Периодичность выполнения установить раз в 1 минуту.\
 Обратите внимание, что может потребоваться указать полный путь к файлу от корня. Посмотреть его можно в **phpinfo()**, параметр **DOCUMENT\_ROOT** или вывести так: \
 **echo $\_SERVER\['DOCUMENT\_ROOT'];**\
 Более подробно про то как добавить задачу, вы можете уточнить у вашего хостинг провайдера.
+
+Если вы обновляетесь со старых версий, обратите внимание на изменение команды:
+
+* было: `php system/cron.php`
+* стало: `php system/bin/console schedule:run --no-interaction`
+
+Подробнее про работу планировщика:
+[Планировщик задач (schedule)](../konsol/planirovshchik-zadach-schedule.md)

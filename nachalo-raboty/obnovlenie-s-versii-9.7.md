@@ -69,6 +69,18 @@ Middleware выполняются до handler и могут прерывать 
 Подробно про объявление маршрутов, middleware и порядок dispatch:
 [Маршрутизация (роутинг)](../moduli/marshrutizaciya-routing.md)
 
+### Обновление cron-задачи
+
+Если у вас была настроена старая cron-команда, её необходимо заменить:
+
+* было: `php system/cron.php`
+* стало: `php system/bin/console schedule:run --no-interaction`
+
+Рекомендуемая периодичность запуска: 1 раз в минуту.
+
+Подробнее про планировщик:
+[Планировщик задач (schedule)](../konsol/planirovshchik-zadach-schedule.md)
+
 ### Переопределение сервисов
 
 Раньше сервисы можно было переопределять через ‎config/autoload/dependencies.local.php.
