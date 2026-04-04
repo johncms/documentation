@@ -49,6 +49,26 @@ $route = $container->get('route')
 $route = di(\Johncms\System\Http\Request::class)->getCurrentRouteParams();
 ```
 
+### Маршрутизация и middleware
+
+Новая маршрутизация построена на `Johncms\Router\RouteCollection` и `Symfony Routing`.
+
+Поддерживаются следующие варианты обработчиков маршрута:
+
+* legacy include (строка пути к php-файлу)
+* invokable-контроллер (`Controller::class` с `__invoke()`)
+* массив `[Controller::class, 'method']`
+
+Также добавлены middleware:
+
+* для отдельного маршрута — `->addMiddleware(...)`
+* для группы/коллекции маршрутов — `RouteCollection::addMiddleware(...)`
+
+Middleware выполняются до handler и могут прерывать выполнение (например, при проверке прав доступа).
+
+Подробно про объявление маршрутов, middleware и порядок dispatch:
+[Маршрутизация (роутинг)](../moduli/marshrutizaciya-routing.md)
+
 ### Переопределение сервисов
 
 Раньше сервисы можно было переопределять через ‎config/autoload/dependencies.local.php.
