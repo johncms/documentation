@@ -1,0 +1,68 @@
+---
+metaLinks:
+  alternates:
+    - >-
+      https://app.gitbook.com/s/9pmJhK7QfUfjF0JYsZd2/obshie-svedeniya/validaciya/csrf-proverka-tokena
+---
+
+# Csrf - Проверка токена
+
+Валидатор **Csrf** предназначен для проверки токена csrf. Токен предназначен для защиты формы от подделки запроса. Данный валидатор работает в паре с генератором токенов **\Johncms\Security\Csrf**
+
+### Поддерживаемые параметры
+
+* **tokenId**: Идентификатор токена. Если не задан, используется токен по умолчанию для всего сайта.
+
+### Примеры использования
+
+```php
+// Массив полей и значений
+$data = [
+    'test' => 'token',
+];
+
+// Настройки валидатора
+$rules = [
+    'test' => [
+        'Csrf',
+    ],
+];
+
+// Валидация
+$validator = new \Johncms\Validator\Validator($data, $rules);
+if ($validator->isValid()) {
+    echo 'OK';
+} else {
+    d($validator->getErrors());
+}
+```
+
+В указанном примере будет проверяться токен по умолчанию.
+
+```php
+// Массив полей и значений
+$data = [
+    'test' => 'token',
+];
+
+// Настройки валидатора
+$rules = [
+    'test' => [
+        'Csrf' => [
+            'tokenId' => 'guestbook_form'
+        ],
+    ],
+];
+
+// Валидация
+$validator = new \Johncms\Validator\Validator($data, $rules);
+if ($validator->isValid()) {
+    echo 'OK';
+} else {
+    d($validator->getErrors());
+}
+```
+
+В этом примере мы добавили идентификатор токена, который будет проверяться.
+
+Более подробно работу с токенами мы рассмотрим в отдельной статье.
