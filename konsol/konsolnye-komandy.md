@@ -34,6 +34,7 @@ php system/bin/console help schedule:run
 * `schedule:list` — список задач планировщика
 * `schedule:run` — запуск задач, которые должны выполниться в текущую минуту
 * `router:list` — список зарегистрированных маршрутов
+* `cache:clear` — очистка файлового кэша приложения
 
 ### Показать все маршруты роутера
 
@@ -45,6 +46,12 @@ php system/bin/console router:list
 
 ```bash
 php system/bin/console router:list --details
+```
+
+### Очистить кэш приложения
+
+```bash
+php system/bin/console cache:clear
 ```
 
 ## Запуск в Docker
