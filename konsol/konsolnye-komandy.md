@@ -33,6 +33,19 @@ php system/bin/console help schedule:run
 * `sitemap:generate` — генерация sitemap
 * `schedule:list` — список задач планировщика
 * `schedule:run` — запуск задач, которые должны выполниться в текущую минуту
+* `router:list` — список зарегистрированных маршрутов
+
+### Показать все маршруты роутера
+
+```bash
+php system/bin/console router:list
+```
+
+### Показать маршруты с деталями
+
+```bash
+php system/bin/console router:list --details
+```
 
 ## Запуск в Docker
 
