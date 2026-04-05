@@ -84,6 +84,26 @@ $route = di(\Johncms\System\Http\Request::class)->getCurrentRouteParams();
 
 Middleware выполняются до handler и могут прерывать выполнение (например, при проверке прав доступа).
 
+Если вы используете собственный файл `config/routes.local.php`, после обновления обязательно сверить его с актуальным `config/routes.local.php.example` и привести к текущему формату.
+
+Что важно проверить в `routes.local.php`:
+
+* файл подключается внутрь общего роутера, поэтому маршруты нужно добавлять напрямую через `$router`
+* в файле доступны `$router` (и `$user`, если нужен доступ к текущему пользователю)
+* используйте актуальные примеры объявления маршрутов (в том числе пресеты `{id:number}`, `{slug:slug}`, `{path:path}` и middleware через `->addMiddleware(...)`)
+
+Минимальный актуальный каркас:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+/** @var \Johncms\Router\RouteCollection $router */
+
+$router->map(['GET', 'POST'], '/contacts', 'modules/contacts/index.php');
+```
+
 Подробно про объявление маршрутов, middleware и порядок dispatch:
 [Маршрутизация (роутинг)](../moduli/marshrutizaciya-routing.md)
 
