@@ -13,24 +13,44 @@ metaLinks:
 
 ## Где описываются маршруты
 
-* Основные маршруты системы: `config/routes.php`
-* Ваши дополнительные маршруты: `config/routes.local.php`
+Маршруты загружаются в следующем порядке:
 
-Для собственного кода используйте `routes.local.php`, чтобы изменения не терялись при обновлениях.
+1. `config/routes.php` — глобальные/системные маршруты (зарезервирован для ядра)
+2. `modules/{name}/config/routes.php` — маршруты каждого модуля (подхватываются автоматически)
+3. `config/routes.local.php` — переопределения для конкретного проекта (наивысший приоритет)
 
-Пример есть в файле `config/routes.local.php.example`.
+Каждый модуль регистрирует свои маршруты в `config/routes.php` внутри папки модуля. Файл подхватывается автоматически — вручную подключать его не нужно.
+
+Для добавления маршрутов в сторонних модулях или переопределения маршрутов используйте `config/routes.local.php`. Пример есть в файле `config/routes.local.php.example`.
 
 ## Базовый пример маршрута
+
+Файл `modules/{name}/config/routes.php` должен возвращать callable:
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-/** @var \Johncms\Router\RouteCollection $router */
+use Johncms\Router\RouteCollection;
+use Johncms\System\Users\User;
 
-$router->get('/contacts', 'modules/contacts/index.php');
-$router->map(['GET', 'POST'], '/feedback', 'modules/feedback/index.php');
+return static function (RouteCollection $router, User $user): void {
+    $router->get('/contacts', 'modules/contacts/index.php');
+    $router->map(['GET', 'POST'], '/feedback', 'modules/feedback/index.php');
+};
+```
+
+Параметр `$user` доступен для регистрации маршрутов, зависящих от состояния пользователя:
+
+```php
+return static function (RouteCollection $router, User $user): void {
+    $router->get('/posts', PostsController::class);
+
+    if ($user->isValid()) {
+        $router->post('/posts/create', CreatePostController::class);
+    }
+};
 ```
 
 ## Параметры и ограничения
@@ -56,7 +76,7 @@ $router
 * `{article_code:slug}`
 * `{category:path}`
 
-Примеры можно посмотреть в `config/routes.php`.
+Примеры можно посмотреть в файлах `modules/*/config/routes.php`.
 
 ## Middleware на маршрутах
 
@@ -185,7 +205,7 @@ $router
 
 * путь не совпадает с шаблоном маршрута
 * route params не прошли `requirements`
-* маршрут не зарегистрирован в `routes.php`/`routes.local.php`
+* маршрут не зарегистрирован в `modules/{name}/config/routes.php` или `config/routes.local.php`
 
 ### 405 Method Not Allowed
 

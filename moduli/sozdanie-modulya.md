@@ -219,19 +219,25 @@ $this->layout('system::layout/default');
 ## Добавление маршрута
 
 Наш модуль готов, но пока ещё не доступен в браузере. Давайте это исправим.\
-Чтобы модуль стал доступен, нужно сообщить системе, что у нас есть такой модуль и мы хотим чтобы он был доступен по определенному адресу.\
-Для этого давайте перейдем в папку **config** и в ней создадим файл **routes.local.php** если его ещё нет. Если есть, то откроем его и добавим маршрут для нашего модуля.
+Чтобы модуль стал доступен, нужно создать файл `config/routes.php` внутри папки модуля. Система подхватит его автоматически.
 
 ```php
 <?php
 
-/**
- * /contacts/ - Это адрес страницы по которому будет доступен наш модуль
- *
- * [\Contacts\Controllers\ContactsController::class, 'index']
- * Первое значение это класс контроллера, а второй название метода контроллера
- */
-$map->addRoute(['GET', 'POST'], '/contacts[/]', [\Contacts\Controllers\ContactsController::class, 'index']);
+declare(strict_types=1);
+
+use Johncms\Router\RouteCollection;
+use Johncms\System\Users\User;
+
+return static function (RouteCollection $router, User $user): void {
+    /*
+     * /contacts/ - Это адрес страницы по которому будет доступен наш модуль
+     *
+     * [\Contacts\Controllers\ContactsController::class, 'index']
+     * Первое значение это класс контроллера, а второй название метода контроллера
+     */
+    $router->map(['GET', 'POST'], '/contacts', [\Contacts\Controllers\ContactsController::class, 'index']);
+};
 ```
 
 Теперь наш модуль доступен по адресу **ваш.сайт/contacts/**
