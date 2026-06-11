@@ -17,6 +17,7 @@
 * [Отправка электронной почты (email)](obshie-svedeniya/otpravka-elektronnoi-pochty-email.md)
 * [Работа с уведомлениями](obshie-svedeniya/rabota-s-uvedomleniyami.md)
 * [Работа с запросом (Request)](obshie-svedeniya/rabota-s-zaprosom-request.md)
+* [Пагинация](obshie-svedeniya/pagination.md)
 * [Валидация](obshie-svedeniya/validaciya/README.md)
   * [NotEmpty - Не пустое значение](obshie-svedeniya/validaciya/notempty-ne-pustoe-znachenie.md)
   * [StringLength - длина строки](obshie-svedeniya/validaciya/stringlength-dlina-stroki.md)
