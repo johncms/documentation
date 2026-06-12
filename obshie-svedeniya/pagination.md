@@ -1,6 +1,8 @@
 # Пагинация
 
-Начиная с версии 9.9 в JohnCMS появился собственный компонент пагинации **\Johncms\Http\Pagination**. Он заменяет устаревший форк `johncms/johncms-pagination` (Laravel `LengthAwarePaginator` / метод `->paginate()`) и `Tools::displayPagination` — оба будут удалены вместе с legacy-кодом. Весь новый и рефакторящийся код должен использовать только новый компонент.
+Начиная с версии 9.9 в JohnCMS появился собственный компонент пагинации **\Johncms\Http\Pagination**. Он заменил устаревший форк `johncms/johncms-pagination` (Laravel `LengthAwarePaginator` / метод `->paginate()`) и метод `Tools::displayPagination()` — оба **удалены** в версии 9.9. Весь код должен использовать только новый компонент.
+
+> Обновляетесь с 9.8 и в ваших модулях есть `->paginate()`, `LengthAwarePaginator` или `Tools::displayPagination()`? См. раздел про пагинацию в [инструкции по обновлению](../nachalo-raboty/obnovlenie-s-versii-9.8.md).
 
 ## Состав компонента
 
