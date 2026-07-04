@@ -244,7 +244,7 @@ $services->set(GitCommitRepositoryInterface::class, EloquentGitCommitRepository:
 
 ### Конвертация существующих данных (одноразовые команды)
 
-В версии 9.9 редактор BB-кодов заменён на CKEditor (личные сообщения, библиотека, загрузки и комментарии к ним), а в библиотеке и загрузках добавлены ЧПУ на основе slug-ов. Чтобы привести **уже существующие** данные к новому формату, после обновления нужно один раз выполнить консольные команды.
+В версии 9.9 редактор BB-кодов заменён на CKEditor (личные сообщения, библиотека, загрузки и комментарии к ним, а также комментарии фотоальбомов), а в библиотеке и загрузках добавлены ЧПУ на основе slug-ов. Чтобы привести **уже существующие** данные к новому формату, после обновления нужно один раз выполнить консольные команды.
 
 Команды запускаются через CLI-вход `system/bin/console`:
 
@@ -255,6 +255,7 @@ php system/bin/console library:convert-bbcode       # тексты статей 
 php system/bin/console library:convert-comments     # комментарии библиотеки
 php system/bin/console downloads:convert-bbcode      # описания файлов загрузок
 php system/bin/console downloads:convert-comments    # комментарии загрузок
+php system/bin/console album:convert-comments        # комментарии фотоальбомов
 
 # Генерация slug-ов для ЧПУ
 php system/bin/console library:generate-slugs       # разделы и статьи библиотеки
