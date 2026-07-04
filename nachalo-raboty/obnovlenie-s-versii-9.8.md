@@ -61,9 +61,18 @@ return static function (RouteCollection $router, User $user): void {
 
 Если в ваших модулях встречается что-либо из перечисленного, их нужно перевести на новый компонент, иначе будут ошибки «class/method not found»:
 
-* `->paginate(...)` в запросах Eloquent;
+* `->paginate(...)` в запросах Eloquent (в том числе прямо в контроллере, без репозитория и use case);
 * тип `Illuminate\Contracts\Pagination\LengthAwarePaginator` в репозиториях, use cases и DTO;
-* вызовы `$this->tools->displayPagination(...)` в контроллерах.
+* вызовы `$this->tools->displayPagination(...)` в контроллерах;
+* вызов `$paginator->render()` в шаблонах (метод рендера старого пагинатора).
+
+Типичная ошибка при пропущенной миграции:
+
+```
+Class "Illuminate\Pagination\Paginator" not found
+```
+
+Она возникает при первом же обращении к странице, где вызывается `->paginate()`: класс пагинатора удалён вместе с форком, поэтому метод больше не работает.
 
 Полное описание компонента — на странице [«Пагинация»](../obshie-svedeniya/pagination.md). Ниже — краткая схема миграции.
 
@@ -149,9 +158,80 @@ $items = $this->useCase->getPage($pagination->getPerPage(), $pagination->getOffs
 'pagination' => $pagination->render(),
 ```
 
-В шаблоне по-прежнему достаточно вывести готовый HTML строкой: `<?= $pagination ?>` (где переменная содержит результат `$pagination->render()`).
+#### 4. Шаблон: `$paginator->render()` → готовая строка пагинации
+
+Старый пагинатор передавался в шаблон целиком, а HTML строился вызовом его метода `render()`. Так делать больше нельзя — сам объект пагинатора удалён.
+
+Было:
+
+```php
+<?php foreach ($commits as $commit): ?>
+    <?php /* ... вывод элемента ... */ ?>
+<?php endforeach; ?>
+<div class="mt-4">
+    <?= $commits->render(); ?>
+</div>
+```
+
+Стало (контроллер передаёт обычный массив элементов и уже отрендеренную строку пагинации):
+
+```php
+<?php foreach ($commits as $commit): ?>
+    <?php /* ... вывод элемента ... */ ?>
+<?php endforeach; ?>
+<div class="mt-4">
+    <?= $pagination ?>
+</div>
+```
+
+Где `$pagination` — результат `$pagination->render()`, переданный контроллером.
 
 > Шаблон `system::app/pagination` теперь работает только с новым форматом элементов (ключ `type`). Легаси-ветка (элементы с `name`/`url` без `type`) из тем `default` и `admin` удалена. Если у вас своя тема с собственным шаблоном пагинации — приведите его к новому формату (см. шаблоны темы `default`).
+
+#### Простой модуль: `->paginate()` прямо в контроллере
+
+В старых компактных модулях пагинатор нередко вызывался напрямую в контроллере, без репозитория и use case. Такой код тоже ломается («class not found») и требует миграции.
+
+Было:
+
+```php
+public function index(User $user): string
+{
+    $data = [
+        'commits' => (new GitCommit())->orderByDesc('commit_date')->paginate($user->config->kmess),
+    ];
+
+    return $this->render->render('github::index', $data);
+}
+```
+
+Стало (данные считаются через use case, а пагинация строится штатными сервисами):
+
+```php
+public function index(
+    GetCommitListUseCase $getCommitListUseCase,
+    PaginationFactory $paginationFactory,
+    PaginationGuard $paginationGuard
+): string {
+    $pagination = $paginationFactory->create($getCommitListUseCase->count());
+
+    $redirectUrl = $paginationGuard->redirectUrl($pagination);
+    if ($redirectUrl !== null) {
+        redirect($redirectUrl);
+    }
+
+    return $this->render->render('github::index', [
+        'commits'    => $getCommitListUseCase->getPage($pagination->getPerPage(), $pagination->getOffset()),
+        'pagination' => $pagination->render(),
+    ]);
+}
+```
+
+Сервисы `PaginationFactory`/`PaginationGuard` и use case можно получить как аргументы метода-экшена — контейнер подставит их по типу. Не забудьте связать интерфейс репозитория в `config/services.php` модуля:
+
+```php
+$services->set(GitCommitRepositoryInterface::class, EloquentGitCommitRepository::class)->public();
+```
 
 #### Готовые примеры в коде
 
