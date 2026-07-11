@@ -34,6 +34,7 @@
 
 * [Консольные команды](konsol/konsolnye-komandy.md)
 * [Планировщик задач (schedule)](konsol/planirovshchik-zadach-schedule.md)
+* [Задачи обслуживания в админке](konsol/zadachi-obsluzhivaniya-v-adminke.md)
 
 ## Шаблоны
 

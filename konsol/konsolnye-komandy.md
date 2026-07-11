@@ -41,6 +41,7 @@ php system/bin/console help schedule:run
 * `schedule:run` — запуск задач, которые должны выполниться в текущую минуту
 * `router:list` — список зарегистрированных маршрутов
 * `cache:clear` — очистка файлового кэша приложения
+* `admin-tasks:run-queued` — запуск задач обслуживания, поставленных в очередь из админки (см. [Задачи обслуживания в админке](zadachi-obsluzhivaniya-v-adminke.md))
 
 ### Показать все маршруты роутера
 
@@ -95,4 +96,5 @@ docker exec -it $(docker ps -q -f name=${COMPOSE_PROJECT_NAME}.php-fpm) php syst
 ## См. также
 
 * [Планировщик задач (schedule)](planirovshchik-zadach-schedule.md)
+* [Задачи обслуживания в админке](zadachi-obsluzhivaniya-v-adminke.md)
 * [Конфигурационные файлы (configs)](../obshie-svedeniya/konfiguracionnye-faily-configs.md)
