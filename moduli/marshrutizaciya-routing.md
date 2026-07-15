@@ -32,12 +32,13 @@ metaLinks:
 
 declare(strict_types=1);
 
+use Johncms\Modules\Partners\Application\Controllers\PartnersController;
 use Johncms\Router\RouteCollection;
 use Johncms\System\Users\User;
 
 return static function (RouteCollection $router, User $user): void {
-    $router->get('/contacts', 'modules/contacts/index.php');
-    $router->map(['GET', 'POST'], '/feedback', 'modules/feedback/index.php');
+    $router->get('/partners', PartnersController::class)->name('partners.index');
+    $router->map(['GET', 'POST'], '/feedback', FeedbackController::class)->name('feedback');
 };
 ```
 
@@ -52,6 +53,20 @@ return static function (RouteCollection $router, User $user): void {
     }
 };
 ```
+
+{% hint style="info" %}
+**Конвенция завершающего слэша.** Маршруты принято регистрировать **без** завершающего слэша (`/partners`), а в ссылках (в шаблонах и контроллерах) — использовать слэш (`/partners/`). Перед сопоставлением `index.php` нормализует URI через `rtrim`, поэтому оба варианта работают.
+{% endhint %}
+
+## Именованные маршруты
+
+Маршруту можно задать имя с помощью метода `name()`. Имя используется как внутренний идентификатор маршрута в системе.
+
+```php
+$router->map(['GET', 'POST'], '/guestbook', GuestbookController::class)->name('guestbook.index');
+```
+
+Рекомендуется именовать маршруты по схеме `модуль.действие` (например `guestbook.index`, `guestbook.edit`, `admin.contacts.save`). Это соглашение используется во всех штатных модулях. `name()` можно комбинировать с другими методами (`requirements()`, `addMiddleware()` и т.д.) в цепочке вызовов.
 
 ## Параметры и ограничения
 
@@ -93,9 +108,12 @@ Middleware — это промежуточный обработчик между
 Добавление middleware к одному маршруту:
 
 ```php
+use Johncms\Modules\Guestbook\Application\Controllers\ClearGuestbookController;
+use Johncms\Modules\Guestbook\Application\Middlewares\GuestbookCleanAccessMiddleware;
+
 $router
-    ->map(['GET', 'POST'], '/guestbook/clean', App\Guestbook\ClearController::class)
-    ->addMiddleware(App\Guestbook\GuestbookCleanAccessMiddleware::class);
+    ->map(['GET', 'POST'], '/guestbook/clean', ClearGuestbookController::class)
+    ->addMiddleware(GuestbookCleanAccessMiddleware::class);
 ```
 
 Можно указывать несколько middleware, они будут вызваны по порядку добавления.
@@ -106,10 +124,10 @@ $router
 
 ```php
 $router->group('/guestbook', static function (\Johncms\Router\RouteCollection $group): void {
-    $group->addMiddleware(App\Guestbook\CommonAccessMiddleware::class);
+    $group->addMiddleware(GuestbookCommonAccessMiddleware::class);
 
-    $group->get('/edit/{id:number}', App\Guestbook\EditController::class);
-    $group->post('/reply/{id:number}', App\Guestbook\ReplyController::class);
+    $group->get('/edit/{id:number}', EditEntryController::class);
+    $group->post('/reply/{id:number}', ReplyController::class);
 });
 ```
 
@@ -135,7 +153,7 @@ public function handle(Request $request, callable $next): mixed;
 
 declare(strict_types=1);
 
-namespace App\Guestbook;
+namespace Johncms\Modules\Guestbook\Application\Middlewares;
 
 use Johncms\Router\MiddlewareInterface;
 use Johncms\System\Http\Request;
@@ -158,7 +176,7 @@ final class GuestbookCleanAccessMiddleware implements MiddlewareInterface
 
 ```php
 $router
-    ->get('/contacts', App\Contacts\IndexController::class)
+    ->get('/partners', Johncms\Modules\Partners\Application\Controllers\PartnersController::class)
     ->addMiddleware(static function (\Johncms\System\Http\Request $request, callable $next): mixed {
         return $next($request);
     });
