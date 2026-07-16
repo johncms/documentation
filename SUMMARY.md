@@ -16,6 +16,7 @@
 * [Шаблоны электронных сообщений (email)](obshie-svedeniya/shablony-elektronnykh-soobshenii-email.md)
 * [Отправка электронной почты (email)](obshie-svedeniya/otpravka-elektronnoi-pochty-email.md)
 * [Работа с уведомлениями](obshie-svedeniya/rabota-s-uvedomleniyami.md)
+* [Согласия (Consent)](obshie-svedeniya/consent.md)
 * [Работа с запросом (Request)](obshie-svedeniya/rabota-s-zaprosom-request.md)
 * [Пагинация](obshie-svedeniya/pagination.md)
 * [Валидация](obshie-svedeniya/validaciya/README.md)
