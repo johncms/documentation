@@ -27,7 +27,7 @@ metaLinks:
 <link rel="stylesheet" href="<?= $this->asset('css/app.css', true) ?>">
 ```
 
-Эта строка у нас подключает css файл из папки **themes/default/assets/css/app.css**
+Эта строка у нас подключает css файл из папки **public/themes/default/assets/css/app.css**
 
 Внизу строчку:
 
@@ -35,7 +35,11 @@ metaLinks:
 <script src="<?= $this->asset('js/app.js', true) ?>"></script>
 ```
 
-Эта строчка подключает javascript из папки **themes/default/assets/js/app.js**
+Эта строчка подключает javascript из папки **public/themes/default/assets/js/app.js**
+
+{% hint style="info" %}
+Собранные стили и скрипты лежат в **public/themes/**, а их исходники — в **themes/**. Так сделано потому, что корнем сайта является папка **public**: браузер должен получать только собранные файлы, а исходники ему не нужны. Функция `asset()` подставляет адрес сама, поэтому в шаблоне путь не меняется.
+{% endhint %}
 
 Если мы откроем эти файлы, то увидим там много кода в одну строку. Это нормально. Эти файлы собираются сборщиком и сжимаются для ускорения загрузки браузером пользователей.\
 Как вы наверное уже догадались, эти файлы редактировать не нужно т.к. их собирает сборщик.
@@ -46,32 +50,32 @@ metaLinks:
 Найдем там 2 строчки которые там нужны:
 
 ```javascript
-mix.js('themes/default/src/js/app.js', 'themes/default/assets/js')
-    .sass('themes/default/src/scss/app.scss', 'themes/default/assets/css')
+mix.js('themes/default/src/js/app.js', 'public/themes/default/assets/js')
+    .sass('themes/default/src/scss/app.scss', 'public/themes/default/assets/css')
 ```
 
 Что-то знакомое тут, не правда ли?\
 Давайте разберемся, что у нас тут для чего.
 
 ```javascript
-mix.js('themes/default/src/js/app.js', 'themes/default/assets/js')
+mix.js('themes/default/src/js/app.js', 'public/themes/default/assets/js')
 ```
 
-Эта строчка говорит сборщику чтобы он взял файл по пути **themes/default/src/js/app.js** произвел все необходимые операции с ним и положил его в папку **themes/default/assets/js**. Т.к. во втором параметре мы явно не указали название файла, сборщик соберет файл и сохранит с таким же именем что и исходный файл т.е. **app.js**. В итоге получится так: **themes/default/assets/js/app.js**
+Эта строчка говорит сборщику чтобы он взял файл по пути **themes/default/src/js/app.js** произвел все необходимые операции с ним и положил его в папку **public/themes/default/assets/js**. Т.к. во втором параметре мы явно не указали название файла, сборщик соберет файл и сохранит с таким же именем что и исходный файл т.е. **app.js**. В итоге получится так: **public/themes/default/assets/js/app.js**
 
 Посмотрим на вторую строку
 
 ```javascript
-.sass('themes/default/src/scss/app.scss', 'themes/default/assets/css')
+.sass('themes/default/src/scss/app.scss', 'public/themes/default/assets/css')
 ```
 
-В этой строке мы говорим сборщику чтобы он взял файл **themes/default/src/scss/app.scss**, преобразовал его в пригодный для браузера вид, сжал и положил его в папку **themes/default/assets/css**. Т.к. название файла явно не указали, сборщик назовет файл так же как и исходный, но расширение укажет css. т.е. app.css. В итоге получится так: **themes/default/assets/css/app.css**
+В этой строке мы говорим сборщику чтобы он взял файл **themes/default/src/scss/app.scss**, преобразовал его в пригодный для браузера вид, сжал и положил его в папку **public/themes/default/assets/css**. Т.к. название файла явно не указали, сборщик назовет файл так же как и исходный, но расширение укажет css. т.е. app.css. В итоге получится так: **public/themes/default/assets/css/app.css**
 
 Теперь мы разобрались как у нас попадают файлы **app.js** и **app.css** в нужные папки.
 
 Давайте теперь создадим свою тему и настроим сборщик так, чтобы он собирал ещё и стили и скрипты в нашей теме.\
-Создаем в папке **themes** подпапку с нашей темой **my\_theme**\
-Из папки с темой **default** давайте скопируем 2 папки. src и assets\
+Создаем в папке **themes** подпапку с нашей темой **my\_theme** и копируем в неё из темы **default** папки **src** и **templates**\
+Затем создаем папку **public/themes/my\_theme** и копируем в неё папку **assets** из **public/themes/default**\
 На этом наша тема готова к сборке.\
 Теперь давайте расскажем о ней сборщику и соберем наши стили и скрипты.
 
@@ -85,8 +89,8 @@ mix.sourceMaps(true, 'source-map');
 следующие 2 строки:
 
 ```javascript
-mix.js('themes/my_theme/src/js/app.js', 'themes/my_theme/assets/js')
-    .sass('themes/my_theme/src/scss/app.scss', 'themes/my_theme/assets/css');
+mix.js('themes/my_theme/src/js/app.js', 'public/themes/my_theme/assets/js')
+    .sass('themes/my_theme/src/scss/app.scss', 'public/themes/my_theme/assets/css');
 ```
 
 Мы видим тут те же самые пути, которые рассматривали выше, за исключением папки с темой. Это наша новая папка с темой, которую мы создали.
@@ -106,11 +110,11 @@ mix.js('themes/my_theme/src/js/app.js', 'themes/my_theme/assets/js')
 В результате её выполнения вы должны увидеть следующее:
 
 ```bash
-        Asset                          Size                         Chunks                   Chunk Names
-themes/default/assets/css/app.css      258 KiB  /themes/default/assets/js/app  [emitted]        /themes/default/assets/js/app
-themes/default/assets/css/app.css.map  295 KiB  /themes/default/assets/js/app  [emitted] [dev]  /themes/default/assets/js/app
-themes/my_theme/assets/css/app.css     258 KiB  /themes/default/assets/js/app  [emitted]        /themes/default/assets/js/app
-themes/my_theme/assets/css/app.css.map 295 KiB  /themes/default/assets/js/app  [emitted] [dev]  /themes/default/assets/js/app
+        Asset                                 Size                         Chunks                   Chunk Names
+public/themes/default/assets/css/app.css      258 KiB  /themes/default/assets/js/app  [emitted]        /themes/default/assets/js/app
+public/themes/default/assets/css/app.css.map  295 KiB  /themes/default/assets/js/app  [emitted] [dev]  /themes/default/assets/js/app
+public/themes/my_theme/assets/css/app.css     258 KiB  /themes/default/assets/js/app  [emitted]        /themes/default/assets/js/app
+public/themes/my_theme/assets/css/app.css.map 295 KiB  /themes/default/assets/js/app  [emitted] [dev]  /themes/default/assets/js/app
  + 4 hidden assets
 ```
 

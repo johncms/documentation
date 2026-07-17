@@ -4,7 +4,7 @@
 
 ## Начало работы
 
-* [Обновление с версии 9.8](nachalo-raboty/obnovlenie-s-versii-9.8.md)
+* [Обновление с версии 9.9](nachalo-raboty/obnovlenie-s-versii-9.9.md)
 * [Установка и системные требования](nachalo-raboty/ustanovka-i-sistemnye-trebovaniya.md)
 * [Настройка](nachalo-raboty/nastroika.md)
 * [Структура файлов/папок](nachalo-raboty/struktura-failov-papok.md)
