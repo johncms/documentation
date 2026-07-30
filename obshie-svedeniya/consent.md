@@ -63,9 +63,9 @@ private const CONSENT_CONTEXT = 'my_module_order';
 ### 2. Получите согласия в контроллере
 
 ```php
+use Johncms\Http\Environment;
+use Johncms\Http\Request;
 use Johncms\Modules\Consent\Application\Services\ConsentService;
-use Johncms\System\Http\Environment;
-use Johncms\System\Http\Request;
 use Johncms\Users\User;
 use Johncms\Validator\Validator;
 use Laminas\Validator\Identical;
@@ -76,24 +76,23 @@ final class OrderController
 
     public function __construct(
         private ConsentService $consentService,
-        private Request $request,
         private Environment $env,
         private User $user,
         // ...
     ) {
     }
 
-    public function __invoke(): string
+    public function __invoke(Request $request): string
     {
         $consents = $this->consentService->getFormConsents(self::CONSENT_CONTEXT);
 
         $fields = [
-            'comment' => (string) $this->request->getPost('comment', ''),
+            'comment' => $request->body('comment'),
         ];
 
         // Значения чекбоксов попадают в общий массив полей формы
         foreach ($consents as $consent) {
-            $fields['consent_' . $consent->id] = $this->request->getPost('consent_' . $consent->id);
+            $fields['consent_' . $consent->id] = $request->body('consent_' . $consent->id);
         }
 
         $errors = [];

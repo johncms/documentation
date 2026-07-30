@@ -140,7 +140,7 @@ Middleware может быть:
 Контракт middleware для класса:
 
 ```php
-public function handle(Request $request, callable $next): mixed;
+public function handle(Request $request, callable $next): Response;
 ```
 
 Пример класса middleware:
@@ -152,14 +152,16 @@ declare(strict_types=1);
 
 namespace Johncms\Modules\Guestbook\Application\Middlewares;
 
+use Johncms\Http\Request;
 use Johncms\Router\MiddlewareInterface;
-use Johncms\System\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class GuestbookCleanAccessMiddleware implements MiddlewareInterface
 {
-    public function handle(Request $request, callable $next): mixed
+    public function handle(Request $request, callable $next): Response
     {
-        $params = $request->getCurrentRouteParams();
+        // Параметры совпавшего маршрута доступны как атрибуты запроса
+        $params = $request->attributes->all();
 
         // Если условие не выполнено, можно прервать цепочку (throw/return)
         // throw new \Johncms\Exceptions\PageNotFoundException();
@@ -174,7 +176,7 @@ final class GuestbookCleanAccessMiddleware implements MiddlewareInterface
 ```php
 $router
     ->get('/partners', Johncms\Modules\Partners\Application\Controllers\PartnersController::class)
-    ->addMiddleware(static function (\Johncms\System\Http\Request $request, callable $next): mixed {
+    ->addMiddleware(static function (\Johncms\Http\Request $request, callable $next): \Symfony\Component\HttpFoundation\Response {
         return $next($request);
     });
 ```
