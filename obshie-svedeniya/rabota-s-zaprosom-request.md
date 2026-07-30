@@ -7,146 +7,214 @@ metaLinks:
 
 # Работа с запросом (Request)
 
-Для работы с данными HTTP запроса в JohnCMS используется класс **\Johncms\System\Http\Request**. Он позволяет получить доступ к таким суперглобальным переменным как: **$\_POST, $\_GET, $\_COOKIE, $\_FILES, $\_SERVER**. Это позволяет упростить получение значений по умолчанию, и фильтрацию данных, пришедших от пользователя. Давайте посмотрим на примеры.
+Данные HTTP запроса в JohnCMS представлены классом **\Johncms\Http\Request**. Это тонкая обёртка над `Symfony\Component\HttpFoundation\Request`: доступны все методы HttpFoundation (`getClientIp()`, `isSecure()`, `getPathInfo()`, бэги `query`, `request`, `cookies`, `files`, `headers`, `server`, `attributes`), а обёртка добавляет к ним несколько коротких методов для самых частых операций чтения.
 
-Для начала необходимо получить объект класса Request.
+## Как получить запрос
 
-```php
-/** @var \Johncms\System\Http\Request $request */
-$request = di(\Johncms\System\Http\Request::class);
-```
+Запрос принадлежит одному циклу обработки, поэтому он **не является сервисом контейнера**. Способ получить его ровно один: запрос передают туда, где он нужен.
 
-Строка /\*\* @var \Johncms\System\Http\Request $request \*/ не обязательна и служит лишь для работы автодополнения в IDE если вы конечно используете IDE.
+### В контроллере — аргумент действия
 
-## Получение данных из $\_GET
-
-Предположим, что пользователь открыл страницу http://domain.com/?user\_id=123 и нам нужно получить идентификатор пользователя 123. Сделать это можно следующим образом:
+Объявите `Request` первым параметром метода, до параметров маршрута:
 
 ```php
-$user = $request->getQuery('user_id', 0, FILTER_VALIDATE_INT);
-```
+<?php
 
-Разберем что же тут происходит. Метод **getQuery** пытается получить **user\_id** из суперглобального массива **$\_GET**.\
-Первым параметром принимает название параметра запроса, вторым параметром можно передать стандартное значение, а третим параметром передается фильтр, с помощью которого будет обработано значение. Вы можете ознакомиться со списком фильтров в официальной документации по этой ссылке: [https://www.php.net/manual/ru/filter.filters.php](https://www.php.net/manual/ru/filter.filters.php)
+declare(strict_types=1);
 
-Коротко что делает строка из примера: Пытается получить параметр GET запроса **user\_id**, если его нет, то возвращает 0, если есть, то очищает и возвращает число. Если передано не число, то вернет значение по умолчанию, то есть 0.
+namespace Johncms\Modules\MyModule\Application\Controllers;
 
-## Получение данных из $\_POST
+use Johncms\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-Предположим, что отправлена форма, которая содержит **user\_id** и **name**. Форма отправлена методом POST.
+final class MyController
+{
+    public function view(Request $request, int $id): Response
+    {
+        $page = $request->queryInt('page', 1);
 
-```php
-$user = $request->getPost('user_id', 0, FILTER_VALIDATE_INT);
-$name = $request->getPost('name', '', FILTER_SANITIZE_STRING);
-```
-
-Эти примеры работают так же как и предыдущий. Во втором примере от пользователя ожидается строка, а фильтр **FILTER\_SANITIZE\_STRING** удаляет из нее теги, и при необходимости удаляет или кодирует специальные символы.
-
-## Получение данных из $\_COOKIE
-
-```php
-$name = $request->getCookie('name', '', FILTER_SANITIZE_STRING);
-```
-
-В этом примере как видите всё так же просто как и в предыдущих. Просто поменялось название метода, а принцип работы такой же.
-
-## Получение данных из $\_SERVER
-
-```php
-$user_agent = $request->getServer('HTTP_USER_AGENT', '', FILTER_SANITIZE_STRING);
-```
-
-Этот пример работает так же как и остальные. Получает **HTTP\_USER\_AGENT** из суперглобальной переменной **$\_SERVER**.
-
-## Получение данных из $\_FILES
-
-```php
-$files = $request->getUploadedFiles();
-```
-
-Этот код вернет массив файлов, в котором каждый элемент будет представлен объектом класса GuzzleHttp\Psr7\UploadedFile. Если вы уже работали с выгрузкой файлов в php, то наверное знаете, что множественные файлы в массиве $\_FILES описываются примерно так:
-
-```php
-array(
-    'files' => array(
-        'name' => array(
-            0 => 'file0.txt',
-            1 => 'file1.html',
-        ),
-        'type' => array(
-            0 => 'text/plain',
-            1 => 'text/html',
-        ),
-        /* etc. */
-    ),
-)
-```
-
-для работы с этим стандартными средствами вам необходимо позаботиться о сборе всех данных в нормальную структуру. Если вы используете метод **getUploadedFiles**, то эта задача уже решена для вас и массив файлов будет уже в нормальной структуре:
-
-```php
-array(
-    'files' => array(
-        0 => array(
-            'name' => 'file0.txt',
-            'type' => 'text/plain',
-            /* etc. */
-        ),
-        1 => array(
-            'name' => 'file1.html',
-            'type' => 'text/html',
-            /* etc. */
-        ),
-    ),
-)
-```
-
-Давайте рассмотрим пример сохранения файлов
-
-Допустим, у нас есть такая форма, которая принимает 1 обычный файл и поле с возможностью выбирать несколько файлов.
-
-```markup
-<form action="" method="post" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="file" name="multiple_files[]" multiple>
-    <button type="submit">Отправить</button>
-</form>
-```
-
-Пример сохранения файлов будет выглядеть так:
-
-```php
-$files = $request->getUploadedFiles();
-
-// Сохраняем файл из обычного поля
-if (! empty($files['file'])) {
-    /** @var  $attached_file \Psr\Http\Message\UploadedFileInterface */
-    $attached_file = $files['file'];
-    try {
-        $attached_file->moveTo(UPLOAD_PATH . '/tmp/' . $attached_file->getClientFilename());
-        echo 'Файл успешно сохранен';
-    } catch (\Exception $exception) {
-        echo 'Ошибка сохранения файла: ' . $exception->getMessage();
-    }
-}
-
-// Сохраняем файлы из множественного поля
-if (! empty($files['multiple_files'])) {
-    /** @var  $multiple_files \Psr\Http\Message\UploadedFileInterface[] */
-    $multiple_files = $files['multiple_files'];
-    foreach ($multiple_files as $multiple_file) {
-        try {
-            $multiple_file->moveTo(UPLOAD_PATH . '/tmp/' . $multiple_file->getClientFilename());
-            echo 'Файл успешно сохранен';
-        } catch (\Exception $exception) {
-            echo 'Ошибка сохранения файла: ' . $exception->getMessage();
-        }
+        // ...
     }
 }
 ```
 
-В результате отправки формы с файлами, все файлы будут сохранены в папке upload/tmp c оригинальными названиями, с которыми отправил клиент.
+Запрос объявляют только те действия, которые действительно его читают. Если действие лишь показывает форму — параметр не нужен.
 
 {% hint style="danger" %}
-Обратите внимание, что в примере рассмотрен простой вариант сохранения файлов без каких либо проверок допустимых типов файлов.
+Не сохраняйте запрос в конструкторе или в свойстве контроллера. Контроллеры — синглтоны контейнера, поэтому сохранённый запрос переживёт цикл, которому принадлежит, и в worker-режиме следующие посетители получат ответ по данным первого. По той же причине приватным методам контроллера запрос передают параметром.
+{% endhint %}
+
+### В middleware — аргумент `handle()`
+
+```php
+public function handle(Request $request, callable $next): Response
+{
+    // проверка/подготовка
+    return $next($request);
+}
+```
+
+### В сервисе, который живёт дольше запроса
+
+Варианты в порядке предпочтения:
+
+1. принять нужный факт параметром (строку адреса, хост — см. `ClientInfoDTO`);
+2. принять `Request` параметром того метода, который его читает, если нужен целый набор полей;
+3. прочитать текущий запрос из `Symfony\Component\HttpFoundation\RequestStack`.
+
+Стек — крайний вариант и допустим только в `system/src/`; в Application-слое модуля это тот же скрытый захват запроса, только в другой форме. Он оправдан, когда вызывающих десятки и передать запрос неоткуда (`PaginationFactory`, `Theme`, `Environment`).
+
+### В шаблоне — факт, а не запрос
+
+Шаблон не обращается к запросу. Нужный ему факт отдаёт тонкий сервис поверх стека, и шаблон резолвит именно этот сервис:
+
+```php
+$currentPage = di(\Johncms\Http\CurrentPage::class);
+
+if ($currentPage->isHomePage()) {
+    // ...
+}
+```
+
+{% hint style="warning" %}
+`di(\Johncms\Http\Request::class)` и `$container->get(Request::class)` бросают исключение: такого сервиса нет. Если вы встретили этот вызов в старом коде или стороннем модуле — его нужно заменить на аргумент действия.
+{% endhint %}
+
+## Получение данных из строки запроса ($\_GET)
+
+Пользователь открыл `http://domain.com/?user_id=123&search=john`:
+
+```php
+$userId = $request->queryInt('user_id');          // 123, по умолчанию 0
+$page   = $request->queryInt('page', 1);          // 1, если параметра нет
+$search = $request->queryParam('search');         // 'john', по умолчанию ''
+$ids    = $request->queryInts('ids');             // список чисел из ?ids[]=1&ids[]=2
+```
+
+Первым параметром идёт имя параметра запроса, вторым — значение по умолчанию. Отдельного аргумента с фильтром нет: тип задаёт сам метод.
+
+## Получение данных из тела запроса ($\_POST и JSON)
+
+Методы `body*` читают тело запроса независимо от того, пришло оно формой или JSON:
+
+```php
+$name  = $request->body('name');                  // строка, по умолчанию ''
+$type  = $request->body('type', 'default');
+$id    = $request->bodyInt('user_id');            // число, по умолчанию 0
+$files = $request->bodyInts('attached_files');    // список чисел
+$users = $request->bodyList('users');             // список без приведения типа
+```
+
+Проверить наличие ключа (например, галочки в форме) можно так:
+
+```php
+if ($request->hasBody('subscribe')) {
+    // чекбокс отмечен
+}
+```
+
+Метод запроса проверяется через `isPost()` или общий `isMethod()`:
+
+```php
+if ($request->isPost()) {
+    // обработка отправленной формы
+}
+```
+
+## Некорректные данные
+
+`queryInt()` и `bodyInt()` мягко относятся к мусору: `?id=abc` вернёт значение по умолчанию, а не ошибку. Но массив в скалярном параметре (`?id[]=1`) — это попытка подмены типа, она намеренно не подавляется и превращается в ответ **400 Bad Request**.
+
+Если нужна строгая семантика, обращайтесь к бэгам HttpFoundation напрямую — там неверное значение бросает исключение:
+
+```php
+$id = $request->query->getInt('id');
+```
+
+## Строки приходят обрезанными
+
+Все строки в теле формы и в строке запроса обрезаются по краям (`trim`) глобальным middleware `TrimStringsMiddleware` до того, как отработает контроллер. Это касается и чтения через бэги напрямую. Тело в формате JSON не обрезается.
+
+## Параметры маршрута
+
+Параметры маршрута — это не данные запроса, их объявляют аргументами действия по имени, и они приводятся к типу аргумента:
+
+```php
+// маршрут: /forum/{id}/page/{page}
+public function topic(Request $request, int $id, int $page = 1): Response
+```
+
+При необходимости все параметры совпавшего маршрута доступны как атрибуты запроса:
+
+```php
+$params = $request->attributes->all();
+```
+
+## Cookies, заголовки и данные сервера
+
+Для них используются штатные бэги HttpFoundation:
+
+```php
+$theme     = $request->cookies->get('theme', 'default');
+$userAgent = $request->headers->get('User-Agent', '');
+$ip        = $request->getClientIp();
+$isSecure  = $request->isSecure();
+```
+
+## Получение файлов ($\_FILES)
+
+Загруженные файлы доступны в бэге `files`. Для одного поля:
+
+```php
+$uploaded = $request->files->get('imagefile');
+```
+
+Для всех сразу — `$request->files->all()`. Множественное поле (`<input type="file" name="photos[]" multiple>`) возвращается уже нормальным списком объектов, собирать структуру `$_FILES` вручную не нужно.
+
+Элемент бэга — это `Symfony\Component\HttpFoundation\File\UploadedFile`, то есть HTTP-тип. Он не должен покидать слой HTTP: контроллер преобразует его в `\Johncms\Http\UploadedFileDTO` с помощью `\Johncms\Http\UploadedFileMapper`, и дальше — в use case, сервисы, хранилище — передаётся уже DTO.
+
+```php
+use Johncms\Http\UploadedFileMapper;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+final class PhotoUploadController
+{
+    public function __construct(
+        private readonly SavePhotoUseCase $savePhotoUseCase,
+        private readonly UploadedFileMapper $uploadedFileMapper,
+    ) {
+    }
+
+    public function upload(Request $request, int $albumId): Response
+    {
+        $uploaded = $request->files->get('imagefile');
+        if (! $uploaded instanceof UploadedFile) {
+            // файл не пришёл или загрузка не удалась
+        }
+
+        $this->savePhotoUseCase->execute(
+            $albumId,
+            $this->uploadedFileMapper->fromUploadedFile($uploaded),
+            $request->body('description'),
+        );
+
+        // ...
+    }
+}
+```
+
+Сам DTO умеет проверять успешность загрузки и переместить файл, поэтому оригинальный HTTP-объект дальше не нужен:
+
+```php
+if (! $file->isValid()) {
+    throw new RuntimeException('Ошибка загрузки файла');
+}
+
+$file->moveTo(UPLOAD_PATH . 'photos/' . $newName);
+```
+
+Доступные поля DTO: `clientName`, `mimeType`, `size`, `tmpPath`, `error`.
+
+{% hint style="danger" %}
+В примерах рассмотрен простой вариант сохранения файлов без проверок допустимых типов и размеров. Имя файла, полученное от клиента, использовать как имя на диске нельзя — генерируйте своё.
 {% endhint %}
