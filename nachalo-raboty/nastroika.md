@@ -19,11 +19,7 @@ metaLinks:
 php /path/to/project/system/bin/console schedule:run --no-interaction
 ```
 
-Для работы отправки email через cron убедитесь, что в `config/constants.php` установлено:
-
-```php
-const USE_CRON = true;
-```
+Планировщик разбирает и очередь писем, поэтому без этой cron-задачи почта отправляться не будет.
 
 Подробная инструкция: [Планировщик задач (schedule)](../konsol/planirovshchik-zadach-schedule.md)
 
