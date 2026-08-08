@@ -155,32 +155,31 @@ if ($validator->isValid()) {
 
 ### 5. Выведите чекбоксы в шаблоне
 
-Готовый шаблон чекбокса `system::app/consent-checkbox` уже умеет выводить заголовок, ссылку на текст согласия, звёздочку обязательности и ошибку валидации. Свою разметку писать не нужно:
+Готовый компонент `@theme/components/consent-checkbox.twig` уже умеет выводить заголовок, ссылку на текст согласия, звёздочку обязательности и ошибку валидации. Свою разметку писать не нужно:
 
-```php
-<?php
-/**
- * @var list<Johncms\Modules\Consent\Application\DTO\FormConsentDTO> $consents
- * @var array<string, mixed> $fields
- * @var array<string, array<int, string>> $errors
- */
-?>
-
-<?php foreach ($consents as $consent): ?>
-    <?php $consentField = 'consent_' . $consent->id ?>
-    <?= $this->fetch('system::app/consent-checkbox', [
-        'consent' => $consent,
-        'field'   => $consentField,
-        'checked' => ($fields[$consentField] ?? null) === '1',
-        'errors'  => $errors[$consentField] ?? [],
-    ]) ?>
-<?php endforeach ?>
+```twig
+{% raw %}
+{#
+    @var consents list<\Johncms\Modules\Consent\Application\DTO\FormConsentDTO>
+    @var fields   array
+    @var errors   array
+#}
+{% for consent in consents %}
+    {% set consent_field = 'consent_' ~ consent.id %}
+    {% include '@theme/components/consent-checkbox.twig' with {
+        consent: consent,
+        field: consent_field,
+        checked: fields[consent_field]|default(null) == '1',
+        errors: errors[consent_field]|default([])
+    } only %}
+{% endfor %}
+{% endraw %}
 ```
 
 Не забудьте передать `consents` в шаблон из контроллера:
 
 ```php
-return $this->render->render('my-module::order', [
+return new ViewResponse('@my-module/public/order.twig', [
     'consents' => $consents,
     'fields'   => $fields,
     'errors'   => $errors,

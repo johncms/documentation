@@ -31,14 +31,21 @@ if ($redirectUrl !== null) {
 // 3. Получаем срез данных по limit/offset из пагинации.
 $items = $this->listUseCase->getPage($pagination->getPerPage(), $pagination->getOffset());
 
-// 4. Строим мета-данные страницы и рендерим HTML пагинации.
+// 4. Строим мета-данные страницы и отдаём их шаблону вместе с пагинацией.
 $meta = new PageMeta($pageTitle, $pagination->getCurrentPage());
-return $this->render->render('module::index', [
+return new ViewResponse('@module/public/index.twig', [
     'title'       => $meta->title,
     'description' => $meta->description,
     'items'       => $items,
     'pagination'  => $pagination->render(),
 ]);
+```
+
+`render()` возвращает готовую разметку (`Twig\Markup`), поэтому в шаблоне она выводится как
+обычная переменная — фильтр `|raw` не нужен:
+
+```twig
+{% raw %}{{ pagination }}{% endraw %}
 ```
 
 ### Параметры `PaginationFactory::create()`

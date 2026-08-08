@@ -80,27 +80,25 @@ foreach ($users as $user) {
 }
 ```
 
-Усложним задачу и получим всех пользователей у которых больше 100 постов и разобьём выборку страницы (15 пользователей на страницу):
+Усложним задачу и получим всех пользователей у которых больше 100 постов и разобьём выборку на страницы (15 пользователей на страницу). Метод **paginate()** конструктора запросов в JohnCMS не используется — постраничную навигацию строит сервис `PaginationFactory`, а запрос получает явные **limit** и **offset**:
 
 ```php
-$users = (new \Johncms\Users\User())->where('postforum', '>', 100)->orderBy('id')->paginate(15);
-foreach ($users as $user) {
-    echo $user->id . ' - ' . $user->name . '<br>';
-}
-echo $users->render();
+$query = \Johncms\Users\User::query()->where('postforum', '>', 100)->orderBy('id');
+
+$pagination = $this->paginationFactory->create($query->count(), 15);
+
+$users = $query
+    ->limit($pagination->getPerPage())
+    ->offset($pagination->getOffset())
+    ->get();
 ```
 
-Как видите, всё достаточно просто. Мы заменили **get()** на **paginate()** убрали **limit(10)** и в **paginate** передали количество пользователей, которое мы хотим видеть на одной странице.\
-А дальше с помощью строки **echo $users->render();** отрисовали список страниц.
+Дальше `$users` и `$pagination->render()` передаются в шаблон, где навигация выводится как обычная переменная: `{% raw %}{{ pagination }}{% endraw %}`.
 
-Ну и давайте рассмотрим ещё 1 пример. Получим список пользователей, у которых поле статус не пустое и так же разобьём на страницы и выведем текст статуса.
+Ну и давайте рассмотрим ещё 1 пример. Получим список пользователей, у которых поле статус не пустое:
 
 ```php
-$users = (new \Johncms\Users\User())->where('status', '!=', '')->orderBy('id')->paginate(15);
-foreach ($users as $user) {
-    echo $user->id . ' - ' . $user->name . ' - ' . $user->status . '<br>';
-}
-echo $users->render();
+$users = \Johncms\Users\User::query()->where('status', '!=', '')->orderBy('id')->get();
 ```
 
 На этом всё, если у вас остались вопросы, задайте их на форуме.

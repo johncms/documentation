@@ -28,7 +28,8 @@ metaLinks:
         * Controllers
           * PartnersController.php
     * templates
-      * index.phtml
+      * public
+        * index.twig
 
 {% hint style="info" %}
 Старая структура (папка `Controllers` прямо в корне модуля) по-прежнему работает. Но для новых модулей рекомендуется использовать новую структуру, описанную здесь.
@@ -96,21 +97,20 @@ declare(strict_types=1);
 namespace Johncms\Modules\Partners\Application\Controllers;
 
 use Johncms\Http\Controller\ControllerContext;
+use Johncms\Http\View\ViewResponse;
 use Johncms\NavChain;
-use Johncms\System\View\Render;
 
 final readonly class PartnersController
 {
     public function __construct(
         private ControllerContext $controllerContext,
-        private Render $render,
         private NavChain $navChain,
     ) {
-        // Инициализируем модуль: регистрируем папку с шаблонами и файлы локализации
+        // Инициализируем модуль: подключаем файлы локализации
         $this->controllerContext->initModule('partners');
     }
 
-    public function __invoke(): string
+    public function __invoke(): ViewResponse
     {
     }
 }
@@ -121,24 +121,11 @@ final readonly class PartnersController
 
 * Контроллер объявлен как `final readonly class` — это рекомендуемый стиль для новых классов.
 * Зависимости передаются через конструктор (constructor injection) и разрешаются автоматически контейнером зависимостей. Нам понадобятся:
-  * `ControllerContext` — вспомогательный сервис. Его метод `initModule('partners')` регистрирует папку с шаблонами модуля и файлы локализации. Вызываем его в конструкторе, передавая название папки модуля.
-  * `Render` — сервис шаблонизатора.
+  * `ControllerContext` — вспомогательный сервис. Его метод `initModule('partners')` подключает файлы локализации модуля. Вызываем его в конструкторе, передавая название папки модуля.
   * `NavChain` — сервис для работы с цепочкой навигации (хлебными крошками).
-* Метод `__invoke()` делает контроллер «вызываемым»: именно он выполняется при обращении к маршруту. Он должен вернуть строку с содержимым страницы.
+* Метод `__invoke()` делает контроллер «вызываемым»: именно он выполняется при обращении к маршруту. Он возвращает `ViewResponse` — имя шаблона и данные для него. Сам контроллер страницу не рендерит: этим занимается ядро.
 
 Теперь дополним метод `__invoke()`.
-
-Установим заголовок страницы в тегах title и h1. Для этого в шаблонизатор нужно добавить 2 переменные с именами `title` и `page_title`:
-
-```php
-// Устанавливаем заголовок страницы в теге title и h1
-$this->render->addData(
-    [
-        'title'      => 'Партнёры',
-        'page_title' => 'Наши партнёры',
-    ]
-);
-```
 
 Добавим нашу страницу в цепочку навигации:
 
@@ -167,10 +154,20 @@ $data = [
     ],
 ];
 
-return $this->render->render('partners::index', ['data' => $data]);
+return new ViewResponse(
+    '@partners/public/index.twig',
+    [
+        // Заголовок в теге title и заголовок страницы (h1)
+        'title'      => 'Партнёры',
+        'page_title' => 'Наши партнёры',
+        'partners'   => $data['partners'],
+    ]
+);
 ```
 
-Обратите внимание на последнюю строку. Шаблонизатор имеет своё пространство имён для шаблонов. Оно регистрируется вызовом `initModule('partners')` и совпадает с названием папки модуля. В строке `'partners::index'` слева от `::` — название модуля, справа — название файла шаблона из папки **templates** (без расширения). Вторым параметром `['data' => $data]` передаётся массив данных, доступных в шаблоне: ключи массива становятся именами переменных. В данном примере в шаблоне будет доступна переменная `$data` с массивом партнёров.
+Обратите внимание на последние строки. У каждого модуля есть своё пространство имён для шаблонов, совпадающее с названием его папки; оно появляется само, как только модуль перечислен в `config/autoload/modules.global.php`. В имени `'@partners/public/index.twig'` после `@` — название модуля, дальше — путь к файлу внутри папки **templates**.
+
+Вторым аргументом передаётся массив данных: его ключи становятся именами переменных шаблона. В нашем примере в шаблоне будут доступны `title`, `page_title` и `partners`.
 
 ### Полный код файла контроллера
 
@@ -183,29 +180,20 @@ declare(strict_types=1);
 namespace Johncms\Modules\Partners\Application\Controllers;
 
 use Johncms\Http\Controller\ControllerContext;
+use Johncms\Http\View\ViewResponse;
 use Johncms\NavChain;
-use Johncms\System\View\Render;
 
 final readonly class PartnersController
 {
     public function __construct(
         private ControllerContext $controllerContext,
-        private Render $render,
         private NavChain $navChain,
     ) {
         $this->controllerContext->initModule('partners');
     }
 
-    public function __invoke(): string
+    public function __invoke(): ViewResponse
     {
-        // Устанавливаем заголовок страницы в теге title и h1
-        $this->render->addData(
-            [
-                'title'      => 'Партнёры',
-                'page_title' => 'Наши партнёры',
-            ]
-        );
-
         // Добавляем страницу в цепочку навигации
         $this->navChain->add('Партнёры', '/partners/');
 
@@ -227,7 +215,16 @@ final readonly class PartnersController
             ],
         ];
 
-        return $this->render->render('partners::index', ['data' => $data]);
+        // Контроллер не рендерит страницу сам, а возвращает имя шаблона и данные для него.
+        // Заголовок в теге title и заголовок страницы (h1) передаются там же.
+        return new ViewResponse(
+            '@partners/public/index.twig',
+            [
+                'title'      => 'Партнёры',
+                'page_title' => 'Наши партнёры',
+                'partners'   => $data['partners'],
+            ]
+        );
     }
 }
 ```
@@ -235,27 +232,41 @@ final readonly class PartnersController
 
 ## Создание шаблона
 
-Далее создадим наш шаблон. Шаблон будет располагаться в папке **templates**, и т.к. это основная страница партнёров, назовём его **index.phtml**.
+Шаблоны пишутся на Twig. Публичные страницы модуля лежат в папке **templates/public**,
+админские — в **templates/admin**. Наша страница будет называться **index.twig**.
 
-{% code title="modules/partners/templates/index.phtml" %}
-```php
-<?php
-// Подключаем основной шаблон сайта
-$this->layout('system::layout/default');
-?>
+Имя шаблона в контроллере складывается из пространства имён модуля и пути к файлу:
+`@partners/public/index.twig`. Регистрировать пространство имён не нужно — оно появляется
+само, как только модуль перечислен в `config/autoload/modules.global.php`.
 
-<div>
-    Мы сотрудничаем со следующими партнёрами:
-</div>
+{% code title="modules/partners/templates/public/index.twig" %}
+```twig
+{#
+    Список партнёров.
 
-<ul>
-    <!-- Тут мы перебираем наш массив партнёров и выводим название партнёра со ссылкой на его сайт -->
-    <?php foreach ($data['partners'] as $partner): ?>
-        <li><a href="<?= $partner['url'] ?>"><?= $partner['name'] ?></a></li>
-    <?php endforeach; ?>
-</ul>
+    @var partners array
+#}
+{% extends '@theme/layouts/default.twig' %}
+
+{% block content %}
+    <div>
+        Мы сотрудничаем со следующими партнёрами:
+    </div>
+
+    <ul>
+        {# Перебираем массив партнёров и выводим название со ссылкой на сайт #}
+        {% for partner in partners %}
+            <li><a href="{{ partner.url }}">{{ partner.name }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
 ```
 {% endcode %}
+
+{% hint style="info" %}
+Twig экранирует всё, что печатает, поэтому отдельно вызывать `htmlspecialchars()` не нужно —
+и наоборот, не стоит экранировать данные при сохранении в базу.
+{% endhint %}
 
 ## Добавление маршрута
 
