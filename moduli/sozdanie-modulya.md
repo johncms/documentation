@@ -96,18 +96,14 @@ declare(strict_types=1);
 
 namespace Johncms\Modules\Partners\Application\Controllers;
 
-use Johncms\Http\Controller\ControllerContext;
 use Johncms\Http\View\ViewResponse;
 use Johncms\NavChain;
 
 final readonly class PartnersController
 {
     public function __construct(
-        private ControllerContext $controllerContext,
         private NavChain $navChain,
     ) {
-        // Инициализируем модуль: подключаем файлы локализации
-        $this->controllerContext->initModule('partners');
     }
 
     public function __invoke(): ViewResponse
@@ -121,9 +117,9 @@ final readonly class PartnersController
 
 * Контроллер объявлен как `final readonly class` — это рекомендуемый стиль для новых классов.
 * Зависимости передаются через конструктор (constructor injection) и разрешаются автоматически контейнером зависимостей. Нам понадобятся:
-  * `ControllerContext` — вспомогательный сервис. Его метод `initModule('partners')` подключает файлы локализации модуля. Вызываем его в конструкторе, передавая название папки модуля.
   * `NavChain` — сервис для работы с цепочкой навигации (хлебными крошками).
 * Метод `__invoke()` делает контроллер «вызываемым»: именно он выполняется при обращении к маршруту. Он возвращает `ViewResponse` — имя шаблона и данные для него. Сам контроллер страницу не рендерит: этим занимается ядро.
+* Подключать локализацию модуля не нужно: маршруты, объявленные в `modules/partners/config/routes.php`, помечены модулем `partners`, и ядро подключает его переводы на каждый запрос. Поэтому `__()` в контроллере и в его шаблонах берёт строки из `modules/partners/locale`.
 
 Теперь дополним метод `__invoke()`.
 
@@ -179,17 +175,14 @@ declare(strict_types=1);
 
 namespace Johncms\Modules\Partners\Application\Controllers;
 
-use Johncms\Http\Controller\ControllerContext;
 use Johncms\Http\View\ViewResponse;
 use Johncms\NavChain;
 
 final readonly class PartnersController
 {
     public function __construct(
-        private ControllerContext $controllerContext,
         private NavChain $navChain,
     ) {
-        $this->controllerContext->initModule('partners');
     }
 
     public function __invoke(): ViewResponse
