@@ -45,7 +45,7 @@ return new ViewResponse('@module/public/index.twig', [
 обычная переменная — фильтр `|raw` не нужен:
 
 ```twig
-{% raw %}{{ pagination }}{% endraw %}
+{{ pagination }}
 ```
 
 ### Параметры `PaginationFactory::create()`

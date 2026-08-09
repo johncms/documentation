@@ -158,7 +158,6 @@ if ($validator->isValid()) {
 Готовый компонент `@theme/components/consent-checkbox.twig` уже умеет выводить заголовок, ссылку на текст согласия, звёздочку обязательности и ошибку валидации. Свою разметку писать не нужно:
 
 ```twig
-{% raw %}
 {#
     @var consents list<\Johncms\Modules\Consent\Application\DTO\FormConsentDTO>
     @var fields   array
@@ -173,7 +172,6 @@ if ($validator->isValid()) {
         errors: errors[consent_field]|default([])
     } only %}
 {% endfor %}
-{% endraw %}
 ```
 
 Не забудьте передать `consents` в шаблон из контроллера:

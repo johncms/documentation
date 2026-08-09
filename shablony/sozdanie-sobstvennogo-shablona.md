@@ -44,13 +44,11 @@ metaLinks:
 вставляется, и наполняет его блоки:
 
 ```twig
-{% raw %}
 {% extends '@theme/layouts/default.twig' %}
 
 {% block content %}
     <h2>Добро пожаловать!</h2>
 {% endblock %}
-{% endraw %}
 ```
 
 Пространства имён: `@theme` — шаблоны темы, `@admin` — вёрстка админ-панели,
@@ -58,7 +56,7 @@ metaLinks:
 `sidebar_user`, `sidebar_menu`, `footer_content`, `styles` и `scripts`.
 
 Всё, что шаблон печатает, экранируется автоматически, поэтому данные выводятся просто:
-`{% raw %}{{ переменная }}{% endraw %}`.
+`{{ переменная }}`.
 
 {% hint style="info" %}
 Живой пример темы, состоящей из одного файла, лежит в `/themes/example` — его страница

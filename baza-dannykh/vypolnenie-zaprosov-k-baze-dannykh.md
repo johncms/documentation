@@ -94,7 +94,7 @@ return new ViewResponse('@partners/public/index.twig', [
 URL — заботиться об их формировании не нужно. В шаблоне она выводится как обычная переменная:
 
 ```twig
-{% raw %}{{ pagination }}{% endraw %}
+{{ pagination }}
 ```
 
 Шаблон постраничной навигации расположен тут:\
