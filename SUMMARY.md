@@ -20,16 +20,9 @@
 * [Работа с запросом (Request)](obshie-svedeniya/rabota-s-zaprosom-request.md)
 * [Пагинация](obshie-svedeniya/pagination.md)
 * [Валидация](obshie-svedeniya/validaciya/README.md)
-  * [NotEmpty - Не пустое значение](obshie-svedeniya/validaciya/notempty-ne-pustoe-znachenie.md)
-  * [StringLength - длина строки](obshie-svedeniya/validaciya/stringlength-dlina-stroki.md)
-  * [LessThan - Менее чем](obshie-svedeniya/validaciya/lessthan-menee-chem.md)
-  * [EmailAddress - Проверка email адреса](obshie-svedeniya/validaciya/emailaddress-proverka-email-adresa.md)
-  * [ModelExists - Проверка существования записи в БД](obshie-svedeniya/validaciya/modelexists-proverka-sushestvovaniya-zapisi-v-bd.md)
-  * [ModelNotExists - Проверка отсутствия записи в БД](obshie-svedeniya/validaciya/modelnotexists-proverka-otsutstviya-zapisi-v-bd.md)
-  * [Csrf - Проверка токена](obshie-svedeniya/validaciya/csrf-proverka-tokena.md)
-  * [Flood - проверка на флуд](obshie-svedeniya/validaciya/flood-proverka-na-flud.md)
-  * [Ban - Проверка банов](obshie-svedeniya/validaciya/ban-proverka-banov.md)
-  * [Captcha - Проверка защитного кода](obshie-svedeniya/validaciya/captcha-proverka-zashitnogo-koda.md)
+  * [Правила валидации](obshie-svedeniya/validaciya/rules.md)
+  * [Свои правила валидации](obshie-svedeniya/validaciya/custom-rules.md)
+* [Защита от CSRF](obshie-svedeniya/zashita-ot-csrf.md)
 
 ## Консоль
 

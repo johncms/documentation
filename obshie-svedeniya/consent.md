@@ -67,8 +67,9 @@ use Johncms\Http\Environment;
 use Johncms\Http\Request;
 use Johncms\Modules\Consent\Application\Services\ConsentService;
 use Johncms\Users\User;
-use Johncms\Validator\Validator;
-use Laminas\Validator\Identical;
+use Johncms\Validator\Rules\Identical;
+use Johncms\Validator\Rules\StringLength;
+use Johncms\Validator\ValidatorInterface;
 
 final class OrderController
 {
@@ -78,6 +79,7 @@ final class OrderController
         private ConsentService $consentService,
         private Environment $env,
         private User $user,
+        private ValidatorInterface $validator,
         // ...
     ) {
     }
@@ -107,25 +109,21 @@ final class OrderController
 
 ```php
 $rules = [
-    'comment' => ['NotEmpty' => []],
+    'comment' => [new StringLength(min: 1, max: 5000)],
 ];
 
 foreach ($consents as $consent) {
     if ($consent->isRequired) {
-        $rules['consent_' . $consent->id] = ['Identical' => ['token' => '1']];
+        $rules['consent_' . $consent->id] = [
+            new Identical(token: '1', message: __('You must accept the consent to continue')),
+        ];
     }
 }
 
-$consentMessage = __('You must accept the consent to continue');
-$messages = [
-    'Identical' => [
-        Identical::NOT_SAME      => $consentMessage,
-        Identical::MISSING_TOKEN => $consentMessage,
-    ],
-];
-
-$validator = new Validator($fields, $rules, $messages);
+$result = $this->validator->validate($fields, $rules);
 ```
+
+Текст сообщения указывается у самого правила, поэтому остальные поля формы его не получают.
 
 Необязательные согласия не валидируются: пользователь может их не отмечать.
 
@@ -134,7 +132,7 @@ $validator = new Validator($fields, $rules, $messages);
 Лог заполняется **после** успешного сохранения основных данных формы — записывать нужно только реально отмеченные согласия. Версия берётся из DTO, чтобы в логе остался снимок той версии, которую пользователь видел в момент отправки.
 
 ```php
-if ($validator->isValid()) {
+if ($result->isValid()) {
     $order = $this->createOrder->execute($dto);
 
     $ip = (string) $this->env->getIp(false);
