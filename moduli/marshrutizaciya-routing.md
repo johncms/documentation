@@ -31,24 +31,55 @@ declare(strict_types=1);
 
 use Johncms\Modules\Partners\Application\Controllers\PartnersController;
 use Johncms\Router\RouteCollection;
-use Johncms\System\Users\User;
 
-return static function (RouteCollection $router, User $user): void {
+return static function (RouteCollection $router): void {
     $router->get('/partners', PartnersController::class)->name('partners.index');
     $router->map(['GET', 'POST'], '/feedback', FeedbackController::class)->name('feedback');
 };
 ```
 
-Параметр `$user` доступен для регистрации маршрутов, зависящих от состояния пользователя:
+{% hint style="warning" %}
+**Изменение в 10.0.** Раньше файл получал вторым аргументом `Johncms\System\Users\User`, и маршруты для персонала объявлялись внутри `if ($user->rights >= 7)`. Теперь аргумент один: коллекция маршрутов одинакова для всех посетителей, а кого пускать — решает middleware (см. «Доступ к маршруту»). Сторонним модулям нужно убрать второй параметр из сигнатуры и переписать условия на `permission()` / `RequireAuthMiddleware`.
+{% endhint %}
+
+## Доступ к маршруту
+
+Маршрут объявляется всегда, а ограничение доступа описывается рядом с ним.
+
+### Право на маршрут
 
 ```php
-return static function (RouteCollection $router, User $user): void {
-    $router->get('/posts', PostsController::class);
+use Johncms\Modules\Partners\Application\Services\PartnersPermissions;
 
-    if ($user->isValid()) {
-        $router->post('/posts/create', CreatePostController::class);
-    }
-};
+$router->get('/admin/partners', PartnersAdminController::class)
+    ->name('partners.admin')
+    ->permission(PartnersPermissions::MANAGE);
+```
+
+`permission()` кладёт ключ права в атрибут маршрута; ядро само подключает `RequirePermissionMiddleware`, который его читает. Ответ посетителю без права — **403**, гостю — редирект на `/login`. Если сам факт существования маршрута скрывать важнее, чем честно ответить, — `->permission('...', hidden: true)`, тогда вместо 403 будет 404.
+
+Право должно быть объявлено провайдером модуля (класс, реализующий `PermissionProviderInterface`), иначе выдать его в редакторе ролей будет нечем.
+
+То же самое можно задать сразу на группу — право получат все её маршруты, кроме тех, что назвали своё:
+
+```php
+$admin = $router->group('', static function (RouteCollection $router): void {
+    $router->get('/admin/partners', PartnersAdminController::class)->name('partners.admin');
+    $router->post('/admin/partners', [PartnersAdminController::class, 'save'])->name('partners.admin.save');
+});
+$admin->permission(PartnersPermissions::MANAGE);
+```
+
+### Маршрут только для авторизованных
+
+Когда никакого права не нужно, а нужна только сессия:
+
+```php
+use Johncms\Http\Middleware\RequireAuthMiddleware;
+
+$router->post('/partners/subscribe', SubscribeController::class)
+    ->name('partners.subscribe')
+    ->addMiddleware(RequireAuthMiddleware::class);
 ```
 
 {% hint style="info" %}
