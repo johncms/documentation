@@ -41,6 +41,7 @@
 * [Структура модуля](moduli/struktura-modulya.md)
 * [Создание модуля](moduli/sozdanie-modulya.md)
 * [Маршрутизация (роутинг)](moduli/marshrutizaciya-routing.md)
+* [Права доступа (permissions)](moduli/prava-dostupa.md)
 * [Sitemap-провайдер](moduli/sitemap-provider.md)
 
 ## Мультиязычность
