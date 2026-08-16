@@ -35,6 +35,8 @@ php system/bin/console help schedule:run
 * `i18n:scan` — сканирование исходников и генерация POT-файлов
 * `i18n:translate` — генерация `*.lng.php` из `*.po`
 * `mail:send-pending` — отправка накопившейся почтовой очереди
+* `mail:cleanup` — удаление давно доставленных писем из очереди
+* `mail:upgrade-schema` — добавление в таблицу очереди колонок, отвечающих за повторные попытки (для сайтов, обновляющихся со старых версий)
 * `forum:cleanup-orphan-files` — очистка orphan-файлов форума
 * `sitemap:generate` — генерация sitemap
 * `schedule:list` — список задач планировщика
