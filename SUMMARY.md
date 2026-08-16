@@ -23,6 +23,7 @@
   * [Правила валидации](obshie-svedeniya/validaciya/rules.md)
   * [Свои правила валидации](obshie-svedeniya/validaciya/custom-rules.md)
 * [Защита от CSRF](obshie-svedeniya/zashita-ot-csrf.md)
+* [Очистка HTML (санитайзер)](obshie-svedeniya/html-sanitizer.md)
 
 ## Консоль
 
