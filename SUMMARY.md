@@ -42,6 +42,7 @@
 * [Создание модуля](moduli/sozdanie-modulya.md)
 * [Маршрутизация (роутинг)](moduli/marshrutizaciya-routing.md)
 * [Права доступа (permissions)](moduli/prava-dostupa.md)
+* [Свой сервис входа](moduli/svoi-servis-vkhoda.md)
 * [Sitemap-провайдер](moduli/sitemap-provider.md)
 
 ## Мультиязычность
@@ -68,3 +69,4 @@
 * [Работа с текущим авторизованным пользователем](polzovateli/rabota-s-tekushim-avtorizovannym-polzovatelem.md)
 * [Журнал входов (аудит)](polzovateli/zhurnal-vkhodov.md)
 * [Вход под пользователем](polzovateli/vkhod-pod-polzovatelem.md)
+* [Вход через внешние сервисы](polzovateli/vkhod-cherez-vneshnie-servisy.md)
