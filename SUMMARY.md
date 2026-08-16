@@ -66,3 +66,4 @@
 * [Поля (свойства) пользователей](polzovateli/polya-svoistva-polzovatelei.md)
 * [Работа с пользователями в примерах](polzovateli/rabota-s-polzovatelyami-v-primerakh.md)
 * [Работа с текущим авторизованным пользователем](polzovateli/rabota-s-tekushim-avtorizovannym-polzovatelem.md)
+* [Журнал входов (аудит)](polzovateli/zhurnal-vkhodov.md)
