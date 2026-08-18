@@ -42,7 +42,9 @@ php system/bin/console help schedule:run
 * `schedule:list` — список задач планировщика
 * `schedule:run` — запуск задач, которые должны выполниться в текущую минуту
 * `router:list` — список зарегистрированных маршрутов
-* `cache:clear` — очистка файлового кэша приложения
+* `cache:clear` — полная очистка `data/cache`: кэш приложения, скомпилированный контейнер, маршруты и шаблоны
+* `cache:pool:clear` — очистка кэша приложения; с указанием тегов сбрасывает только их (см. [Кэширование](../obshie-svedeniya/caching.md))
+* `cache:pool:prune` — освобождение места, занятого истёкшими и сброшенными записями кэша
 * `admin-tasks:run-queued` — запуск задач обслуживания, поставленных в очередь из админки (см. [Задачи обслуживания в админке](zadachi-obsluzhivaniya-v-adminke.md))
 
 ### Показать все маршруты роутера
@@ -59,8 +61,22 @@ php system/bin/console router:list --details
 
 ### Очистить кэш приложения
 
+Полностью, вместе со скомпилированным контейнером и шаблонами — это то, что нужно после обновления CMS:
+
 ```bash
 php system/bin/console cache:clear
+```
+
+Только данные, накэшированные модулями, — контейнер и шаблоны при этом не трогаются:
+
+```bash
+php system/bin/console cache:pool:clear
+```
+
+Только записи с определёнными тегами:
+
+```bash
+php system/bin/console cache:pool:clear news counters
 ```
 
 ## Запуск в Docker
