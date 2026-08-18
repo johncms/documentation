@@ -31,6 +31,8 @@ use Johncms\Http\UploadedFileDTO;
 use Johncms\Image\ImageProcessingException;
 use Johncms\Image\ImageProcessorInterface;
 use Johncms\Modules\MyModule\Application\Exceptions\CoverUploadException;
+use Johncms\Storage\StorageException;
+use Johncms\Storage\StorageInterface;
 
 final readonly class UploadCoverUseCase
 {
@@ -39,24 +41,23 @@ final readonly class UploadCoverUseCase
 
     public function __construct(
         private ImageProcessorInterface $imageProcessor,
+        private StorageInterface $storage,
     ) {
     }
 
     public function execute(int $id, UploadedFileDTO $file): void
     {
-        $dir = UPLOAD_PATH . 'covers' . DS;
-        if (! is_dir($dir) && ! mkdir($dir, 0777, true) && ! is_dir($dir)) {
-            throw new CoverUploadException(__('An error occurred'));
-        }
-
         try {
-            $this->imageProcessor->saveScaledDown(
-                $file->tmpPath,
-                $dir . $id . '.jpg',
-                self::COVER_WIDTH,
-                self::COVER_HEIGHT
+            $this->storage->storeGenerated(
+                'covers/' . $id . '.jpg',
+                fn(string $target) => $this->imageProcessor->saveScaledDown(
+                    $file->tmpPath,
+                    $target,
+                    self::COVER_WIDTH,
+                    self::COVER_HEIGHT
+                )
             );
-        } catch (ImageProcessingException $exception) {
+        } catch (ImageProcessingException | StorageException $exception) {
             throw new CoverUploadException($exception->getMessage());
         }
     }
@@ -64,6 +65,8 @@ final readonly class UploadCoverUseCase
 ```
 
 Источник и цель задаются **путями к файлам**: загрузка и так лежит на диске (`UploadedFileDTO::$tmpPath`), результат тоже нужен на диске. Методы ничего не возвращают — они пишут файл.
+
+Готовую картинку кладём в [хранилище](storage.md), а не по пути, собранному из `UPLOAD_PATH`: `storeGenerated()` даёт обработчику временный путь, забирает написанное на диск и убирает за собой. Так папки создаются сами, права выставляются по конфигурации, а картинки можно перенести в облако, не трогая код.
 
 ### Общие правила
 
@@ -73,7 +76,7 @@ final readonly class UploadCoverUseCase
 
 **Качество** — последний аргумент, число от 0 до 100, по умолчанию 100. Оно влияет только на форматы со сжатием с потерями (JPEG, WebP); для PNG его наличие ничего не меняет.
 
-**Целевую папку сервис не создаёт.** Если её нет, вызов закончится `ImageProcessingException` — создайте папку заранее, как в примере выше.
+**Целевую папку сервис не создаёт.** Если её нет, вызов закончится `ImageProcessingException`. При записи через `storeGenerated()` об этом думать не нужно — [диск](storage.md) создаёт недостающие папки сам.
 
 ### Доступные операции
 
@@ -229,6 +232,7 @@ final readonly class CoverPreviewController
     public function __construct(
         private CoverRepositoryInterface $covers,
         private ThumbnailGenerator $thumbnails,
+        private StorageInterface $storage,
     ) {
     }
 
@@ -240,8 +244,11 @@ final readonly class CoverPreviewController
         }
 
         try {
-            $preview = $this->thumbnails->scaledDown(UPLOAD_PATH . 'covers' . DS . $cover->id . '.jpg', 220, 300);
-        } catch (ImageProcessingException) {
+            $preview = $this->storage->withLocalCopy(
+                'covers/' . $cover->id . '.jpg',
+                fn(string $path): string => $this->thumbnails->scaledDown($path, 220, 300)
+            );
+        } catch (ImageProcessingException | StorageException) {
             return new Response('', Response::HTTP_NOT_FOUND);
         }
 
@@ -279,16 +286,14 @@ $r->get('/my-module/preview/{id:number}/{name}', [CoverPreviewController::class,
     ->requirements(['name' => '[A-Za-z0-9_.\-]+']);
 ```
 
-…и **дополнительно** отрежьте путь из имени, а у результата проверьте, что он остался внутри нужной папки:
+…и **дополнительно** отрежьте путь из имени:
 
 ```php
 public function screen(Request $request, int $id, string $name): Response
 {
-    $directory = UPLOAD_PATH . 'covers' . DS . 'screens' . DS . $id . DS;
+    $path = 'covers/screens/' . $id . '/' . basename($name);
 
-    $path = realpath($directory . basename($name));
-    $boundary = realpath($directory);
-    if ($path === false || $boundary === false || ! str_starts_with($path, $boundary . DS)) {
+    if (! $this->storage->exists($path)) {
         return new Response('', Response::HTTP_NOT_FOUND);
     }
 
@@ -297,7 +302,9 @@ public function screen(Request $request, int $id, string $name): Response
 ```
 
 {% hint style="info" %}
-Проверок три, потому что каждая закрывает своё. Регулярное выражение маршрута отсекает очевидное, `basename()` убирает путь из имени, а сравнение с `realpath()` ловит то, что прошло мимо обеих, — например символическую ссылку, ведущую наружу.
+Проверок здесь две, и третью делает [диск](storage.md): за пределы своего корня он не выпускает — путь с `../` внутри закончится исключением, а не чтением чужого файла. Регулярное выражение маршрута отсекает очевидное, `basename()` убирает путь из имени.
+
+Если файл читается не через диск, а напрямую с файловой системы, проверку границы придётся писать самому: сравнить `realpath()` от полного пути с `realpath()` от папки и убедиться, что первый начинается со второго.
 {% endhint %}
 
 ## Драйверы и настройки
