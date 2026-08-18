@@ -199,6 +199,38 @@ $this->imageProcessor->saveScaledDown($file->tmpPath, $target, 400, 300);
 EXIF (раньше сохранялись лежащими на боку), а метаданные из сохранённого файла вырезаются — в
 публичный файл больше не попадают GPS-координаты места съёмки.
 
+## Файлы хранятся через диски
+
+Работа с файловой системой собрана за одним интерфейсом — `Johncms\Storage\StorageInterface`.
+Модули больше не собирают пути из `UPLOAD_PATH` и не создают папки сами: диск делает это за них,
+а какой именно диск используется, решает конфигурация. Появилась поддержка объектных хранилищ,
+совместимых с S3.
+
+Что изменилось для авторов модулей:
+
+| Было | Стало |
+|---|---|
+| `di(Johncms\Files\Filesystem::class)->storage('local')` | `Johncms\Storage\StorageInterface` через конструктор |
+| `Johncms\Files\FileStorage` | `Johncms\Files\FileStore` |
+| `$storage->saveFromRequest($request, 'upload', 'my_module')` | `$files->storeUpload($uploadedFileDTO, 'my_module')` |
+| `Johncms\Files\Models\File` | `Johncms\Files\StoredFileDTO` (модель наружу не выдаётся) |
+| `UPLOAD_PATH . 'my_module/' . $name` | `$storage->store('my_module/' . $name, $contents)` |
+| `League\Flysystem\FilesystemException` | `Johncms\Storage\StorageException` |
+
+Формат `config/autoload/filesystem.global.php` тоже изменился: вместо `storages` с ключами `type`
+и `root_dir` — `disks` с ключами `driver`, `root`, `url`, `visibility` и `permissions`. Файл
+входит в поставку и обновляется вместе с CMS; свои настройки держите в `filesystem.local.php`.
+
+Подробности — в разделах [Хранилище файлов](../obshie-svedeniya/storage.md) и
+[Загруженные файлы](../obshie-svedeniya/files.md).
+
+{% hint style="info" %}
+Права на загруженные файлы теперь выставляются явно, по конфигурации диска. Раньше режим файла
+определялся значением `umask` на сервере, и при строгом `umask` загруженный файл мог оказаться
+недоступным для чтения веб-сервером — картинка загружалась, но не открывалась. Уже лежащих файлов
+это не касается, только новых.
+{% endhint %}
+
 ## Превью картинок отдаются маршрутами, а не скриптами
 
 Скрипты `public/assets/modules/downloads/preview.php` и `public/assets/modules/forum/thumbinal.php`
