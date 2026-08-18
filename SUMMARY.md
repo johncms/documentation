@@ -26,6 +26,8 @@
   * [Свои правила валидации](obshie-svedeniya/validaciya/custom-rules.md)
 * [Защита от CSRF](obshie-svedeniya/zashita-ot-csrf.md)
 * [Очистка HTML (санитайзер)](obshie-svedeniya/html-sanitizer.md)
+* [Хранилище файлов (диски)](obshie-svedeniya/storage.md)
+* [Загруженные файлы (реестр)](obshie-svedeniya/files.md)
 
 ## Консоль
 
