@@ -20,6 +20,7 @@
 * [Работа с запросом (Request)](obshie-svedeniya/rabota-s-zaprosom-request.md)
 * [Пагинация](obshie-svedeniya/pagination.md)
 * [Кэширование](obshie-svedeniya/caching.md)
+* [Обработка изображений](obshie-svedeniya/images.md)
 * [Валидация](obshie-svedeniya/validaciya/README.md)
   * [Правила валидации](obshie-svedeniya/validaciya/rules.md)
   * [Свои правила валидации](obshie-svedeniya/validaciya/custom-rules.md)
