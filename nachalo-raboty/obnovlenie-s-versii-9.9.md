@@ -231,6 +231,35 @@ EXIF (раньше сохранялись лежащими на боку), а м
 это не касается, только новых.
 {% endhint %}
 
+## Капча выбирается в настройках
+
+Раньше капча была одна: каждый модуль сам создавал картинку через `mobicms/captcha`, сам клал код
+в сессию под ключом `code` и сам рисовал поле ввода. Теперь между формой и проверкой стоит
+`Johncms\Captcha\CaptchaManager`, а какая капча используется, выбирают в админке:
+**Система → Капча**. В поставку входят картинка с кодом, hCaptcha, Yandex SmartCaptcha и Google
+reCAPTCHA v3; трём сервисам нужны только ключи, дополнительных пакетов они не требуют.
+
+Что изменилось для авторов модулей:
+
+| Было | Стало |
+|---|---|
+| `new Mobicms\Captcha\Code()` и `new Mobicms\Captcha\Image($code)` в контроллере | `$captcha->challenge('имя_формы')` |
+| `$session->set('code', ...)` и `$session->remove('code')` | ничего: ответ гасит сама проверка |
+| `$request->body('code')` | `$request->body($captcha->fieldName())` |
+| `<img src="{{ captcha }}">` и своё поле ввода в шаблоне | `{% include '@theme/components/captcha.twig' %}` |
+| `Johncms\Auth\Authentication\LoginCaptcha` | `CaptchaManager` с областью `login` |
+
+Заодно исправлены две давние особенности: код больше не лежит у всех форм под одним ключом
+сессии, поэтому две формы, открытые в разных вкладках, не мешают друг другу, и один и тот же
+ответ нельзя отправить дважды.
+
+Библиотека `mobicms/captcha` обновлена до 5.x — у неё изменился API: класс `Code` удалён, картинка
+сама создаёт код (`getCode()`, `getImage()`). Если модуль обращался к ней напрямую, его нужно
+перевести на `CaptchaManager`.
+
+Подробности — в разделах [Капча](../obshie-svedeniya/captcha.md) и
+[Свой провайдер капчи](../moduli/svoi-provaider-kapchi.md).
+
 ## Превью картинок отдаются маршрутами, а не скриптами
 
 Скрипты `public/assets/modules/downloads/preview.php` и `public/assets/modules/forum/thumbinal.php`
