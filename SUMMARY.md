@@ -24,6 +24,7 @@
 * [Валидация](obshie-svedeniya/validaciya/README.md)
   * [Правила валидации](obshie-svedeniya/validaciya/rules.md)
   * [Свои правила валидации](obshie-svedeniya/validaciya/custom-rules.md)
+* [Капча](obshie-svedeniya/captcha.md)
 * [Защита от CSRF](obshie-svedeniya/zashita-ot-csrf.md)
 * [Очистка HTML (санитайзер)](obshie-svedeniya/html-sanitizer.md)
 * [Хранилище файлов (диски)](obshie-svedeniya/storage.md)
@@ -48,6 +49,7 @@
 * [Маршрутизация (роутинг)](moduli/marshrutizaciya-routing.md)
 * [Права доступа (permissions)](moduli/prava-dostupa.md)
 * [Свой сервис входа](moduli/svoi-servis-vkhoda.md)
+* [Свой провайдер капчи](moduli/svoi-provaider-kapchi.md)
 * [Sitemap-провайдер](moduli/sitemap-provider.md)
 
 ## Мультиязычность
