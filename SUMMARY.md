@@ -61,6 +61,7 @@
 ## База данных
 
 * [Настройки подключения к базе данных](baza-dannykh/nastroiki-podklyucheniya-k-baze-dannykh.md)
+* [Миграции базы данных](baza-dannykh/migracii.md)
 * [Выполнение запросов к базе данных](baza-dannykh/vypolnenie-zaprosov-k-baze-dannykh.md)
 * [Вставка записей (insert)](baza-dannykh/vstavka-zapisei-insert.md)
 * [Обновление записей (update)](baza-dannykh/obnovlenie-zapisei-update.md)
