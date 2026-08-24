@@ -114,6 +114,26 @@ composer install
 
 Если вы обновляетесь с версии ниже 9.9, эти скрипты и инструкции к ним остались в ветке `9.x` и в [документации ветки 9.9](https://github.com/johncms/documentation/tree/9.9). Выполните их **до** перехода на 10.0.
 
+## Модули переехали в каталог вендора
+
+Было `modules/<модуль>/`, стало `modules/<вендор>/<модуль>/`. Всё, что поставляется вместе с CMS, лежит теперь в `modules/johncms/`: `modules/johncms/forum/`, `modules/johncms/news/` и так далее. Каждый модуль получает собственное пространство имён, и два автора могут выпустить модуль с одинаковым названием, не сталкиваясь друг с другом.
+
+После распаковки новой версии удалите старые каталоги модулей:
+
+```bash
+rm -rf modules/admin modules/album modules/collections modules/community modules/consent \
+       modules/contacts modules/downloads modules/forum modules/guestbook modules/help \
+       modules/homepage modules/language modules/library modules/login modules/mail \
+       modules/news modules/notifications modules/online modules/profile modules/redirect \
+       modules/registration
+```
+
+Система их не подключает — она ищет модули только на два уровня вглубь, — но оставленные каталоги занимают место и путают при работе по FTP.
+
+Имена модулей при этом не изменились: неймспейс шаблона (`@forum/...`), домен переводов (`d__('forum', ...)`) и источник миграций (`migrate --source=forum`) остались прежними. Вендор относится только к тому, где лежат файлы.
+
+Если у вас есть свои модули, перенесите их в каталог со своим именем вендора — например `modules/mysite/mymodule/` — и поправьте в них два места: путь PSR-4 в корневом `composer.json` и пути `MODULES_PATH . '<модуль>/...'` внутри модуля (теперь `MODULES_PATH . 'mysite/<модуль>/...'`). После этого выполните `composer dump-autoload`.
+
 ## Зависимости переехали в `vendor/`
 
 Composer-зависимости, которые раньше лежали в `system/vendor`, теперь устанавливаются в стандартную папку `vendor/` в корне. При обновлении удалите старую папку и переустановите зависимости:
