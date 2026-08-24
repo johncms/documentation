@@ -67,7 +67,7 @@ final class MyModuleUrlsProvider implements SitemapUrlProviderInterface
 
 ## Регистрация провайдера
 
-В файле `modules/my-module/config/services.php` зарегистрируйте провайдер с тегом `johncms.sitemap_provider`:
+В файле `modules/<вендор>/my-module/config/services.php` зарегистрируйте провайдер с тегом `johncms.sitemap_provider`:
 
 ```php
 <?php

@@ -9,9 +9,9 @@ metaLinks:
 Давайте создадим свой первый простой модуль.\
 Это будет обычная простая страница со списком наших партнёров.
 
-Как нам уже известно, модули располагаются в папке **modules**.
+Как нам уже известно, модули располагаются в папке **modules**, каждый — внутри папки своего вендора.
 
-Сначала создадим папку с модулем и назовём её **partners**, путь к папке получится такой: **modules/partners**.
+Вендор — это ваше имя или имя вашей студии; оно же станет первой частью имени пакета, если вы решите его публиковать. Возьмём для примера **mysite**: путь к папке модуля получится таким — **modules/mysite/partners**.
 
 Пока создадим простой модуль без мультиязычности.
 
@@ -20,16 +20,18 @@ metaLinks:
 После выполнения всех действий из этой статьи у нас получится такая структура:
 
 * modules
-  * partners
-    * config
-      * routes.php
-    * src
-      * Application
-        * Controllers
-          * PartnersController.php
-    * templates
-      * public
-        * index.twig
+  * mysite
+    * partners
+      * module.php
+      * config
+        * routes.php
+      * src
+        * Application
+          * Controllers
+            * PartnersController.php
+      * templates
+        * public
+          * index.twig
 
 {% hint style="info" %}
 Старая структура (папка `Controllers` прямо в корне модуля) по-прежнему работает. Но для новых модулей рекомендуется использовать новую структуру, описанную здесь.
@@ -47,10 +49,12 @@ metaLinks:
 Чтобы классы модуля загружались автоматически, зарегистрируйте пространство имён в секции `autoload.psr-4` файла `composer.json`:
 
 ```json
-"Johncms\\Modules\\Partners\\": "modules/partners/src/"
+"Mysite\\Partners\\": "modules/mysite/partners/src/"
 ```
 
-Таким образом, пространством имён нашего модуля будет **Johncms\Modules\Partners**, и оно указывает на папку **modules/partners/src**.
+Таким образом, пространством имён нашего модуля будет **Mysite\Partners**, и оно указывает на папку **modules/mysite/partners/src**.
+
+Пространство имён `Johncms\Modules\…` занято модулями поставки — для своего модуля берите собственное, чтобы классы не столкнулись.
 
 После регистрации пространства имён нужно обновить карту автозагрузки, выполнив команду:
 
@@ -58,27 +62,59 @@ metaLinks:
 composer dump-autoload
 ```
 
+## Манифест модуля
+
+Папка становится модулем, когда в ней есть файл **module.php** — манифест. Создайте его рядом с папкой `config`:
+
+{% code title="modules/mysite/partners/module.php" %}
+```php
+<?php
+
+declare(strict_types=1);
+
+return [
+    // Ключ: вендор и название модуля. Должен совпадать с путём к папке.
+    'key'   => 'mysite/partners',
+
+    // Короткое имя: пространство имён шаблонов (@partners), домен переводов и
+    // источник миграций. Менять его после выпуска модуля нельзя.
+    'alias' => 'partners',
+
+    // Название модуля для панели администратора.
+    'name'  => 'Партнёры',
+];
+```
+{% endcode %}
+
+Если `alias` не указать, он будет собран из ключа — `mysite.partners`. Короткое имя удобнее, но оно должно быть свободно: два модуля не могут занимать одно.
+
 ## Регистрация модуля
 
-Помимо автозагрузки классов, модуль нужно зарегистрировать в системе, добавив его в список установленных модулей.
-
-Создайте в папке **config/autoload** файл с именем **modules.local.php** (если его ещё нет) со следующим содержимым:
+Модуль, который просто лежит в папке, система видит, но не подключает: у такого модуля не выполнены миграции, и его страницы отвечали бы обращением к несуществующим таблицам. Чтобы включить его, добавьте запись в файл **config/autoload/modules.local.php**:
 
 {% code title="/config/autoload/modules.local.php" %}
 ```php
 <?php
 
+declare(strict_types=1);
+
 return [
     'modules' => [
-        'installed_modules' => [
-            'partners', // Название папки с модулем
+        'state' => [
+            'mysite/partners' => ['alias' => 'partners', 'installed' => true, 'enabled' => true],
         ],
     ],
 ];
 ```
 {% endcode %}
 
-В данном случае **partners** — это название папки с модулем. При добавлении дополнительных модулей просто добавьте их названия по аналогии.
+Файл создаётся системой, и в нём уже перечислены модули поставки — просто добавьте к ним свою строку.
+
+Проверить, что система видит модуль и включила его, можно командой:
+
+```bash
+php system/bin/console module:list
+```
 
 ## Создание контроллера
 
@@ -88,7 +124,7 @@ return [
 
 Давайте создадим файл **PartnersController.php** со следующим содержимым:
 
-{% code title="modules/partners/src/Application/Controllers/PartnersController.php" %}
+{% code title="modules/mysite/partners/src/Application/Controllers/PartnersController.php" %}
 ```php
 <?php
 
@@ -119,7 +155,7 @@ final readonly class PartnersController
 * Зависимости передаются через конструктор (constructor injection) и разрешаются автоматически контейнером зависимостей. Нам понадобятся:
   * `NavChain` — сервис для работы с цепочкой навигации (хлебными крошками).
 * Метод `__invoke()` делает контроллер «вызываемым»: именно он выполняется при обращении к маршруту. Он возвращает `ViewResponse` — имя шаблона и данные для него. Сам контроллер страницу не рендерит: этим занимается ядро.
-* Подключать локализацию модуля не нужно: маршруты, объявленные в `modules/partners/config/routes.php`, помечены модулем `partners`, и ядро подключает его переводы на каждый запрос. Поэтому `__()` в контроллере и в его шаблонах берёт строки из `modules/partners/locale`.
+* Подключать локализацию модуля не нужно: маршруты, объявленные в `modules/mysite/partners/config/routes.php`, помечены этим модулем, и ядро подключает его переводы на каждый запрос. Поэтому `__()` в контроллере и в его шаблонах берёт строки из `modules/mysite/partners/locale`.
 
 Теперь дополним метод `__invoke()`.
 
@@ -161,13 +197,13 @@ return new ViewResponse(
 );
 ```
 
-Обратите внимание на последние строки. У каждого модуля есть своё пространство имён для шаблонов, совпадающее с названием его папки; оно появляется само, как только модуль перечислен в `config/autoload/modules.global.php`. В имени `'@partners/public/index.twig'` после `@` — название модуля, дальше — путь к файлу внутри папки **templates**.
+Обратите внимание на последние строки. У каждого модуля есть своё пространство имён для шаблонов, совпадающее с названием его папки; оно появляется само, как только модуль включён в `config/autoload/modules.local.php`. В имени `'@partners/public/index.twig'` после `@` — название модуля, дальше — путь к файлу внутри папки **templates**.
 
 Вторым аргументом передаётся массив данных: его ключи становятся именами переменных шаблона. В нашем примере в шаблоне будут доступны `title`, `page_title` и `partners`.
 
 ### Полный код файла контроллера
 
-{% code title="modules/partners/src/Application/Controllers/PartnersController.php" %}
+{% code title="modules/mysite/partners/src/Application/Controllers/PartnersController.php" %}
 ```php
 <?php
 
@@ -230,9 +266,9 @@ final readonly class PartnersController
 
 Имя шаблона в контроллере складывается из пространства имён модуля и пути к файлу:
 `@partners/public/index.twig`. Регистрировать пространство имён не нужно — оно появляется
-само, как только модуль перечислен в `config/autoload/modules.global.php`.
+само, как только модуль включён в `config/autoload/modules.local.php`.
 
-{% code title="modules/partners/templates/public/index.twig" %}
+{% code title="modules/mysite/partners/templates/public/index.twig" %}
 ```twig
 {#
     Список партнёров.
@@ -266,7 +302,7 @@ Twig экранирует всё, что печатает, поэтому отд
 Наш модуль готов, но пока ещё не доступен в браузере. Давайте это исправим.\
 Чтобы модуль стал доступен, нужно создать файл `config/routes.php` внутри папки модуля. Система подхватит его автоматически.
 
-{% code title="modules/partners/config/routes.php" %}
+{% code title="modules/mysite/partners/config/routes.php" %}
 ```php
 <?php
 

@@ -16,13 +16,13 @@ metaLinks:
 Маршруты загружаются в следующем порядке:
 
 1. `config/routes.php` — глобальные/системные маршруты (зарезервирован для ядра)
-2. `modules/{name}/config/routes.php` — маршруты каждого модуля (подхватываются автоматически)
+2. `modules/{vendor}/{name}/config/routes.php` — маршруты каждого модуля (подхватываются автоматически)
 
 Каждый модуль регистрирует свои маршруты в `config/routes.php` внутри папки модуля. Файл подхватывается автоматически — вручную подключать его не нужно.
 
 ## Базовый пример маршрута
 
-Файл `modules/{name}/config/routes.php` должен возвращать callable:
+Файл `modules/{vendor}/{name}/config/routes.php` должен возвращать callable:
 
 ```php
 <?php
@@ -119,7 +119,7 @@ $router
 * `{article_code:slug}`
 * `{category:path}`
 
-Примеры можно посмотреть в файлах `modules/*/config/routes.php`.
+Примеры можно посмотреть в файлах `modules/*/*/config/routes.php`.
 
 ## Middleware на маршрутах
 
@@ -272,7 +272,7 @@ const CACHE_ROUTES = true;
 
 * путь не совпадает с шаблоном маршрута
 * route params не прошли `requirements`
-* маршрут не зарегистрирован в `modules/{name}/config/routes.php`
+* маршрут не зарегистрирован в `modules/{vendor}/{name}/config/routes.php`
 
 ### 405 Method Not Allowed
 
