@@ -45,8 +45,10 @@
 
 ## Модули
 
+* [Установка и удаление модулей](moduli/ustanovka-modulei.md)
 * [Структура модуля](moduli/struktura-modulya.md)
 * [Создание модуля](moduli/sozdanie-modulya.md)
+* [Публикация модуля](moduli/publikaciya-modulya.md)
 * [Маршрутизация (роутинг)](moduli/marshrutizaciya-routing.md)
 * [Права доступа (permissions)](moduli/prava-dostupa.md)
 * [Свой сервис входа](moduli/svoi-servis-vkhoda.md)
