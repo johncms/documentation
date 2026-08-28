@@ -67,26 +67,29 @@ final class MyModuleUrlsProvider implements SitemapUrlProviderInterface
 
 ## Регистрация провайдера
 
-В файле `config/services.php` модуля зарегистрируйте провайдер с тегом `johncms.sitemap_provider`:
+Отдельно регистрировать провайдер не нужно: он попадает в контейнер вместе с остальным прикладным слоем модуля, а тег `johncms.sitemap_provider` система ставит сама — по реализованному интерфейсу. Достаточно, чтобы класс лежал внутри каталога, который загружает `config/services.php` модуля:
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-use Mysite\MyModule\Application\Sitemap\MyModuleUrlsProvider;
-use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
-return function (ContainerConfigurator $configurator): void {
-    $services = $configurator->services();
+return static function (ContainerConfigurator $container): void {
+    $services = $container->services();
 
-    $services
-        ->set(MyModuleUrlsProvider::class)
+    $services->load(
+        'Mysite\\MyModule\\Application\\',
+        dirname(__DIR__) . '/src/Application'
+    )
         ->autowire()
-        ->tag('johncms.sitemap_provider')
+        ->autoconfigure()
         ->public();
 };
 ```
+
+Ключевое здесь — `autoconfigure()`: именно он разрешает системе пометить провайдер тегом. Если вы объявляете класс отдельной строкой `set()`, не забудьте добавить `->autoconfigure()` к ней — иначе тег не проставится и провайдер молча не попадёт в sitemap.
 
 После этого при следующем запуске планировщика провайдер будет автоматически подхвачен и его URL попадут в sitemap.
 
