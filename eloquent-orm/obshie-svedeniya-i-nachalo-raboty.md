@@ -14,21 +14,15 @@ metaLinks:
 ## Определение моделей
 
 Для начала создадим модель Eloquent. Все модели Eloquent наследуют класс **Illuminate\Database\Eloquent\Model**.\
-Допустим мы делаем модуль блогов. Создадим базовую структуру модуля как [описано здесь](https://johncms.com/documentation/create_module/). Модуль назовём **blog.**\
+Допустим мы делаем модуль блогов. Создадим базовую структуру модуля как [описано здесь](../moduli/sozdanie-modulya.md). Вендором возьмём **mysite**, модуль назовём **blog** — папка модуля будет `modules/mysite/blog`.\
 Классы модуля хранятся в папке **src**. Модели разместим в **src/Domain/Models**.\
-Автозагрузка классов настраивается через PSR-4 в файле **composer.json** в корне сайта. Добавьте в секцию `autoload.psr-4` пространство имен модуля:
+Автозагрузка классов настраивается через PSR-4 в манифесте модуля — файле `module.php`:
 
-```json
-"Johncms\\Modules\\Blog\\": "modules/blog/src/"
+```php
+'autoload' => ['psr-4' => ['Mysite\\Blog\\' => 'src/']],
 ```
 
-После этого обновите карту автозагрузки:
-
-```bash
-composer dump-autoload
-```
-
-Слева указывается пространство имен (namespace), справа — папка, в которой располагаются классы этого пространства имен.\
+Слева указывается пространство имен (namespace), справа — папка внутри модуля, в которой располагаются классы этого пространства имен.\
 Создайте таблицу posts с примерно таким набором полей:
 
 * id
@@ -61,7 +55,7 @@ CREATE TABLE `posts`
 ```php
 <?php
 
-namespace Johncms\Modules\Blog\Domain\Models;
+namespace Mysite\Blog\Domain\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -85,7 +79,7 @@ class Post extends Model
 ```php
 <?php
 
-namespace Johncms\Modules\Blog\Domain\Models;
+namespace Mysite\Blog\Domain\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -117,7 +111,7 @@ Eloquent также предполагает, что каждая таблица
 ```php
 <?php
 
-namespace Johncms\Modules\Blog\Domain\Models;
+namespace Mysite\Blog\Domain\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -142,7 +136,7 @@ class Post extends Model
 ```php
 <?php
 
-namespace Johncms\Modules\Blog\Domain\Models;
+namespace Mysite\Blog\Domain\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -167,7 +161,7 @@ class Post extends Model
 ```php
 <?php
 
-namespace Johncms\Modules\Blog\Domain\Models;
+namespace Mysite\Blog\Domain\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -187,7 +181,7 @@ class Post extends Model
 После создания модели и связанной с ней таблицы, вы можете начать получать данные из вашей БД. Каждая модель Eloquent представляет собой мощный конструктор запросов, позволяющий удобно выполнять запросы к связанной таблице. Например:
 
 ```php
-$post = new \Johncms\Modules\Blog\Domain\Models\Post();
+$post = new \Mysite\Blog\Domain\Models\Post();
 $all_posts = $post->all();
 
 foreach ($all_posts as $post) {
@@ -202,7 +196,7 @@ foreach ($all_posts as $post) {
 Метод all в Eloquent возвращает все результаты из таблицы модели. Поскольку модели Eloquent работают как конструктор запросов, вы можете также добавить ограничения в запрос, а затем использовать метод get для получения результатов:
 
 ```php
-$post = new \Johncms\Modules\Blog\Domain\Models\Post();
+$post = new \Mysite\Blog\Domain\Models\Post();
 $all_posts = $post->where('user_id', '=', 1)
     ->orderBy('name', 'desc')
     ->get();

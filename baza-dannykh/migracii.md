@@ -42,7 +42,7 @@ php system/bin/console migrate:rollback
 
 ## Для разработчиков модулей
 
-Миграции модуля лежат в `modules/<модуль>/migrations/`, миграции ядра — в `system/migrations/`. Создаются командой:
+Миграции модуля лежат в `modules/<вендор>/<модуль>/migrations/`, миграции ядра — в `system/migrations/`. Источник миграций называется по алиасу модуля (`forum`), а не по ключу (`johncms/forum`). Создаются командой:
 
 ```bash
 php system/bin/console make:migration forum add_slug_to_sections --table=forum_sections

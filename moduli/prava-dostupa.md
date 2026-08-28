@@ -65,7 +65,7 @@ $this->accessChecker->allows(ForumPermissions::TOPIC_MODERATE, $topic);
 
 declare(strict_types=1);
 
-namespace Johncms\Modules\Partners\Application\Services;
+namespace Mysite\Partners\Application\Services;
 
 use Johncms\Auth\Authorization\PermissionDefinition;
 use Johncms\Auth\Authorization\PermissionProviderInterface;

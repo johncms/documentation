@@ -22,11 +22,11 @@ JohnCMS автоматически генерирует XML-карту сайт�
 
 declare(strict_types=1);
 
-namespace Johncms\Modules\MyModule\Application\Sitemap;
+namespace Mysite\MyModule\Application\Sitemap;
 
-use Johncms\Modules\MyModule\Domain\Models\MyModel;
 use Johncms\Sitemap\SitemapUrlEntry;
 use Johncms\Sitemap\SitemapUrlProviderInterface;
+use Mysite\MyModule\Domain\Models\MyModel;
 
 final class MyModuleUrlsProvider implements SitemapUrlProviderInterface
 {
@@ -67,14 +67,14 @@ final class MyModuleUrlsProvider implements SitemapUrlProviderInterface
 
 ## Регистрация провайдера
 
-В файле `modules/<вендор>/my-module/config/services.php` зарегистрируйте провайдер с тегом `johncms.sitemap_provider`:
+В файле `config/services.php` модуля зарегистрируйте провайдер с тегом `johncms.sitemap_provider`:
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-use Johncms\Modules\MyModule\Application\Sitemap\MyModuleUrlsProvider;
+use Mysite\MyModule\Application\Sitemap\MyModuleUrlsProvider;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return function (ContainerConfigurator $configurator): void {

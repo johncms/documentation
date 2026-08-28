@@ -9,7 +9,7 @@
 Наследник `AbstractOAuth2Provider` — это три адреса и маппинг полей:
 
 ```php
-namespace Johncms\Modules\Discord\Auth;
+namespace Vasya\Discord\Infrastructure\Auth;
 
 use Johncms\Auth\External\AbstractOAuth2Provider;
 use Johncms\Auth\External\ExternalIdentityDTO;
@@ -59,14 +59,20 @@ final class DiscordProvider extends AbstractOAuth2Provider
 }
 ```
 
-Регистрация — тегом в `config/services.php` модуля:
+Регистрация — в `config/services.php` модуля:
+
+```php
+$services->set(DiscordProvider::class)->autowire()->autoconfigure();
+```
+
+Тег `johncms.auth.external_provider` ядро вешает само на всё, что реализует
+`ExternalIdentityProviderInterface`, — при условии, что сервис объявлен с `autoconfigure()`
+(так работает и `$services->load(...)` для целого каталога). Без autoconfigure тег указывают
+явно:
 
 ```php
 $services->set(DiscordProvider::class)->tag('johncms.auth.external_provider');
 ```
-
-Тег можно не указывать явно: ядро вешает его на всё, что реализует
-`ExternalIdentityProviderInterface`.
 
 Маршруты модулю не нужны: `/auth/discord` и `/auth/discord/callback` — ядровые и
 параметризованы ключом. Ключи приложения администратор вводит в `/admin/auth/providers`, там же

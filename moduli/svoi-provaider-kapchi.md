@@ -13,7 +13,7 @@ description: Как добавить в систему ещё одну капч�
 Все внешние сервисы устроены одинаково: виджет рисует себя по публичному ключу, кладёт токен в поле формы, а запрос на один адрес говорит, годится этот токен или нет. Это уже написано в `AbstractRemoteCaptchaProvider`, поэтому провайдер — это адрес, имена полей и разбор ответа:
 
 ```php
-namespace Johncms\Modules\Turnstile\Captcha;
+namespace Vasya\Turnstile\Infrastructure\Captcha;
 
 use Johncms\Captcha\CaptchaFailure;
 use Johncms\Captcha\CaptchaResult;
@@ -95,7 +95,13 @@ final class TurnstileProvider extends AbstractRemoteCaptchaProvider
 
 ### Регистрация
 
-Отдельной регистрации не требуется: ядро вешает тег на всё, что реализует `CaptchaProviderInterface`. Если сервисы модуля объявляются поимённо, укажите тег явно:
+Ядро вешает тег `johncms.captcha_provider` на всё, что реализует `CaptchaProviderInterface`, поэтому отдельной регистрации не требуется — при условии, что сервис объявлен с `autoconfigure()`:
+
+```php
+$services->set(TurnstileProvider::class)->autowire()->autoconfigure();
+```
+
+Если autoconfigure не используется, укажите тег явно:
 
 ```php
 $services->set(TurnstileProvider::class)->tag('johncms.captcha_provider');

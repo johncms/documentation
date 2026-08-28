@@ -29,8 +29,8 @@ metaLinks:
 
 declare(strict_types=1);
 
-use Johncms\Modules\Partners\Application\Controllers\PartnersController;
 use Johncms\Router\RouteCollection;
+use Mysite\Partners\Application\Controllers\PartnersController;
 
 return static function (RouteCollection $router): void {
     $router->get('/partners', PartnersController::class)->name('partners.index');
@@ -49,7 +49,7 @@ return static function (RouteCollection $router): void {
 ### Право на маршрут
 
 ```php
-use Johncms\Modules\Partners\Application\Services\PartnersPermissions;
+use Mysite\Partners\Application\Services\PartnersPermissions;
 
 $router->get('/admin/partners', PartnersAdminController::class)
     ->name('partners.admin')
@@ -82,8 +82,25 @@ $router->post('/partners/subscribe', SubscribeController::class)
     ->addMiddleware(RequireAuthMiddleware::class);
 ```
 
+### Раздел панели администратора
+
+Маршруты раздела в админке объявляются с `->adminArea()` — на группе или на отдельном маршруте:
+
+```php
+$admin = $router->group('', static function (RouteCollection $router): void {
+    $router->get('/admin/partners', PartnersAdminController::class)->name('partners.admin');
+});
+$admin->permission(PartnersPermissions::MANAGE)->adminArea();
+```
+
+Это даёт странице переводы, на которых написаны макет панели и её меню, и первое звено цепочки навигации. Без `adminArea()` страница отрисуется, но всё меню вокруг неё останется на английском.
+
+{% hint style="warning" %}
+Настройки группы — middleware, `permission()`, `adminArea()` — **не** передаются во вложенную группу: группа внутри группы объявляет их заново.
+{% endhint %}
+
 {% hint style="info" %}
-**Конвенция завершающего слэша.** Маршруты принято регистрировать **без** завершающего слэша (`/partners`), а в ссылках (в шаблонах и контроллерах) — использовать слэш (`/partners/`). Перед сопоставлением `index.php` нормализует URI через `rtrim`, поэтому оба варианта работают.
+**Конвенция завершающего слэша.** Маршруты принято регистрировать **без** завершающего слэша (`/partners`), а в ссылках (в шаблонах и контроллерах) — использовать слэш (`/partners/`). Перед сопоставлением путь запроса нормализуется (`Johncms\Http\RequestPathNormalizer`): декодируется и лишается завершающего слэша, поэтому оба варианта работают.
 {% endhint %}
 
 ## Именованные маршруты
@@ -102,7 +119,7 @@ $router->map(['GET', 'POST'], '/guestbook', GuestbookController::class)->name('g
 
 ```php
 $router
-    ->map(['GET', 'POST'], '/contacts/{city}/{id}/{street}', 'modules/contacts/index.php')
+    ->map(['GET', 'POST'], '/contacts/{city}/{id}/{street}', ContactsController::class)
     ->defaults([
         'city' => null,
         'id' => null,
@@ -206,7 +223,7 @@ final class GuestbookCleanAccessMiddleware implements MiddlewareInterface
 
 ```php
 $router
-    ->get('/partners', Johncms\Modules\Partners\Application\Controllers\PartnersController::class)
+    ->get('/partners', Mysite\Partners\Application\Controllers\PartnersController::class)
     ->addMiddleware(static function (\Johncms\Http\Request $request, callable $next): \Symfony\Component\HttpFoundation\Response {
         return $next($request);
     });
@@ -245,24 +262,23 @@ const CACHE_ROUTES = true;
 
 В маршруте можно указать:
 
-1. Строку с путем legacy-файла (`'modules/contacts/index.php'`)
-2. Invokable-контроллер (`SomeController::class` с `__invoke()`)
-3. Массив `[ControllerClass::class, 'method']`
+1. Invokable-контроллер (`SomeController::class` с методом `__invoke()`)
+2. Массив `[ControllerClass::class, 'method']`
 
-Это обрабатывается в `index.php` через `ActionInvoker` и `MiddlewareDispatcher`.
+В обоих случаях контроллер берётся из контейнера — значит, он должен быть объявлен в `config/services.php` модуля. Вызовом занимаются `ActionInvoker` и `MiddlewareDispatcher` внутри `Johncms\Http\Kernel`.
 
 ## Как работает dispatch
 
-Схема обработки запроса:
+Запрос обрабатывает `Johncms\Http\Kernel`; `public/index.php` только собирает запрос и передаёт его ядру.
 
-1. URI нормализуется в `index.php`
-2. `SymfonyRouteMatcher::dispatch()` пытается сопоставить маршрут
-3. При `FOUND`:
+1. `SymfonyRouteMatcher::dispatch()` нормализует путь и пытается сопоставить маршрут
+2. При `FOUND`:
    * route params кладутся в request
+   * подключаются переводы модуля, которому принадлежит маршрут
    * запускается цепочка middleware
    * вызывается handler
-4. При `METHOD_NOT_ALLOWED` возвращается `405 Method Not Allowed`
-5. При `NOT_FOUND` вызывается `pageNotFound()`
+3. При `METHOD_NOT_ALLOWED` возвращается `405 Method Not Allowed`
+4. При `NOT_FOUND` вызывается `pageNotFound()`
 
 ## Типовые ошибки
 
@@ -284,7 +300,7 @@ const CACHE_ROUTES = true;
 
 Причины:
 
-* middleware-класс не зарегистрирован в контейнере
+* middleware-класс не зарегистрирован в контейнере (`config/services.php` модуля)
 * middleware не callable и не реализует `MiddlewareInterface`
 
 В этом случае `MiddlewareDispatcher` выбросит `InvalidArgumentException`.
