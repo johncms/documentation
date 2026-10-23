@@ -56,6 +56,7 @@
 * [Sitemap-провайдер](moduli/sitemap-provider.md)
 * [Место посетителя](moduli/visitor-place-provider.md)
 * [Системные уведомления](moduli/system-notification-provider.md)
+* [Блок главной страницы](moduli/homepage-block-provider.md)
 
 ## Мультиязычность
 
