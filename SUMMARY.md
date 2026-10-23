@@ -54,6 +54,7 @@
 * [Свой сервис входа](moduli/svoi-servis-vkhoda.md)
 * [Свой провайдер капчи](moduli/svoi-provaider-kapchi.md)
 * [Sitemap-провайдер](moduli/sitemap-provider.md)
+* [Место посетителя](moduli/visitor-place-provider.md)
 
 ## Мультиязычность
 
