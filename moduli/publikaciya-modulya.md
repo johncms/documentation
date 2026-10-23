@@ -101,16 +101,37 @@ blog-1.0.0.zip
 Чтобы модуль было видно, объявите пункт меню — реализуйте `Johncms\View\Menu\MenuItemProviderInterface`:
 
 ```php
+public function __construct(private PostRepositoryInterface $posts)
+{
+}
+
 public function menuItems(): iterable
 {
     return [
-        new MenuItem(MenuArea::Main, d__('blog', 'Блог'), '/blog/', icon: 'book', weight: 50),
+        new MenuItem(
+            MenuArea::Main,
+            d__('blog', 'Блог'),
+            '/blog/',
+            icon: 'book',
+            weight: 50,
+            counter: fn (): int => $this->posts->countPublishedSince(time() - 86400),
+        ),
         new MenuItem(MenuArea::Admin, d__('blog', 'Блог'), '/admin/blog', permission: 'blog.manage'),
     ];
 }
 ```
 
 Пункт, недоступный посетителю по правам, до шаблона не дойдёт. Тема выводит такие пункты сама, править её не нужно.
+
+`counter` — что нового в разделе: число на значке рядом с пунктом. Его считают, только когда меню рисуется, поэтому подсчёт держите лёгким, а дорогой кэшируйте. Нет нового — верните 0, и значка не будет.
+
+Куда попадает пункт:
+
+| Область | Где |
+|---|---|
+| `MenuArea::Main` | разделы главного меню сайта |
+| `MenuArea::Staff` | часть главного меню для персонала — под чертой, красным; права укажите в `permission` |
+| `MenuArea::Admin` | меню панели управления |
 
 ## Установка и удаление данных
 
