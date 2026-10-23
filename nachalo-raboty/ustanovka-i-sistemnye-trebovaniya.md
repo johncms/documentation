@@ -12,9 +12,9 @@ metaLinks:
 Для корректной работы JohnCMS, на хостинге, который вы используете, должно быть установлено следующее программное обеспечение
 
 * Web сервер Apache или nginx
-* PHP 8.2 и выше
-* MySQL 5.6.4 и выше
-* Для работы с MуSQL должен использоваться встроенный драйвер [MySQL Native Driver (mysqlnd)](https://www.php.net/manual/ru/book.mysqlnd.php)
+* PHP 8.4 и выше
+* MySQL 5.7 и выше или MariaDB 10.2 и выше
+* Для работы с MySQL должен использоваться встроенный драйвер [MySQL Native Driver (mysqlnd)](https://www.php.net/manual/ru/book.mysqlnd.php)
 
 Для работы системы требуются следующие расширения php:
 
