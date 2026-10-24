@@ -56,7 +56,7 @@ foreach ($users as $user) {
 Получим 10 пользователей мужского пола:
 
 ```php
-$users = (new \Johncms\Users\User())->where('sex', '=', 'm')->orderBy('id')->limit(10)->get();
+$users = \Johncms\Users\User::query()->where('sex', '=', \Johncms\Users\Gender::Male->value)->orderBy('id')->limit(10)->get();
 foreach ($users as $user) {
     echo $user->id . ' - ' . $user->name . '<br>';
 }
@@ -65,7 +65,7 @@ foreach ($users as $user) {
 Получим 10 пользователей женского пола:
 
 ```php
-$users = (new \Johncms\Users\User())->where('sex', '=', 'zh')->orderBy('id')->limit(10)->get();
+$users = \Johncms\Users\User::query()->where('sex', '=', \Johncms\Users\Gender::Female->value)->orderBy('id')->limit(10)->get();
 foreach ($users as $user) {
     echo $user->id . ' - ' . $user->name . '<br>';
 }

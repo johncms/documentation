@@ -67,7 +67,7 @@
 ## InArray — значение из списка
 
 ```php
-'sex' => [new InArray(haystack: ['m', 'zh'])],
+'sex' => [new InArray(haystack: Gender::values())],
 ```
 
 | Параметр   | Значение по умолчанию | Описание                          |
