@@ -17,7 +17,7 @@ callback в запросе токена и профиль из `/oauth2/user_inf
 
 ## Настройка
 
-Экран `/admin/auth/providers` (право `admin.settings.manage`):
+Вкладка «Сервисы входа» в настройках, `/admin/settings/sign-in` (право `admin.settings.manage`):
 
 * `Client ID` и `Client secret` приложения, зарегистрированного у провайдера;
 * переключатель «Включён» — сервис показывается на экранах входа, только если включён **и** оба

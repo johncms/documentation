@@ -75,7 +75,7 @@ $services->set(DiscordProvider::class)->tag('johncms.auth.external_provider');
 ```
 
 Маршруты модулю не нужны: `/auth/discord` и `/auth/discord/callback` — ядровые и
-параметризованы ключом. Ключи приложения администратор вводит в `/admin/auth/providers`, там же
+параметризованы ключом. Ключи приложения администратор вводит в `/admin/settings/sign-in`, там же
 берёт адрес возврата.
 
 ## Нетиповой случай
