@@ -78,7 +78,10 @@ $services->set(ModerationNotificationProvider::class)->autowire()->tag('johncms.
 
 Примеры в коде — `src/Application/Notifications/` модулей `mail`, `forum`, `library`, `downloads`, `album`, `profile` и `admin`.
 
+Очередь модерации обычно стоит сообщить ещё и строкой «Требует внимания» на главной панели: уведомление пользователь видит в шапке сайта на любой странице, строку — персонал, открывший панель. Это разные точки расширения, см. [Главная панели управления](admin-dashboard.md).
+
 ## См. также
 
+* [Главная панели управления](admin-dashboard.md)
 * [Место посетителя](visitor-place-provider.md)
 * [Права доступа](prava-dostupa.md)
