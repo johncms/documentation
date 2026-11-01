@@ -46,7 +46,7 @@ php system/bin/console help schedule:run
 * `module:install`, `module:update`, `module:enable`, `module:disable`, `module:uninstall` — установка, обновление, включение, выключение и удаление модуля
 * `module:sync` — запись модулей поставки в файл состояния сайта и удаление из него исчезнувших
 * `module:publish-assets` — копирование ассетов установленных модулей в `public/modules`
-* `auth:sync-roles` — создание встроенных ролей текущей версии и выдача им недостающих прав (см. [Права доступа](../moduli/prava-dostupa.md))
+* `system:update` — миграции, синхронизация деклараций и прав, хуки обновления модулей, проверка и очистка кэша (см. [Права доступа](../moduli/prava-dostupa.md))
 * `auth:cleanup` — удаление недействительных сессий, истёкших ссылок восстановления пароля и старых записей журнала входов (см. [Журнал входов](../polzovateli/zhurnal-vkhodov.md))
 * `auth:migrate-legacy-access`, `auth:drop-legacy-columns` — одноразовые шаги перехода с 9.9 на роли (см. [Обновление с версии 9.9](../nachalo-raboty/obnovlenie-s-versii-9.9.md))
 * `forum:cleanup-orphan-files` — очистка orphan-файлов форума

@@ -46,7 +46,7 @@ php system/bin/console module:uninstall вендор/модуль --purge   # с
 После установки модуля, объявляющего свои права доступа, выполните:
 
 ```bash
-php system/bin/console auth:sync-roles
+php system/bin/console system:update
 ```
 
 Права появляются у ролей только после этого: контейнер собирается до того, как модуль появился, поэтому в момент установки система о его правах ещё не знает.
