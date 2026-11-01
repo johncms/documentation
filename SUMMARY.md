@@ -47,6 +47,7 @@
 
 * [Установка и удаление модулей](moduli/ustanovka-modulei.md)
 * [Структура модуля](moduli/struktura-modulya.md)
+* [Коллекции: PHP API](moduli/collections.md)
 * [Создание модуля](moduli/sozdanie-modulya.md)
 * [Публикация модуля](moduli/publikaciya-modulya.md)
 * [Маршрутизация (роутинг)](moduli/marshrutizaciya-routing.md)
