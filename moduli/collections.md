@@ -134,8 +134,8 @@ Date/Datetime — `DateTimeImmutable`, текстовые — string. `In` пр�
 и датами. `Eq` с null выбирает базовое NULL либо отсутствие дополнительного значения; null
 внутри `In` не поддерживается. Фильтры соединяются через AND.
 
-Сейчас `includeSubsections: true` отклоняется явно; поддержка поддерева относится к следующему
-этапу API разделов. `onlyActive` пока проверяет активность записи и её временное окно;
+`includeSubsections: true` выбирает записи поддерева указанного `sectionId`.
+`onlyActive` пока проверяет активность записи и её временное окно;
 полная политика видимости коллекции и разделов развивается отдельно.
 
 ## Частичное обновление
@@ -207,3 +207,88 @@ $sectionId = $importer->importSection($sectionForm, $createdAt, $updatedAt);
 
 Импорт использует общий транзакционный механизм, включая внешнюю транзакцию вызывающего.
 DDL внутри операций импорта не выполняется. Изменять исторические атрибуты обычным patch нельзя.
+
+## API иерархических разделов
+
+Внедряйте `CollectionSectionsApiInterface`. Интерфейс возвращает неизменяемые DTO,
+независимые от Eloquent. Это административное чтение: неактивные разделы также доступны;
+проверку публичной видимости коллекции, разделов и предков потребитель пока выполняет отдельно.
+
+```php
+use Johncms\Modules\Collections\Application\Api\CollectionSectionsApiInterface;
+use Johncms\Modules\Collections\Application\DTO\CollectionSectionFormDTO;
+use Johncms\Modules\Collections\Domain\Query\ContentCollectionItemQuery;
+
+$sectionId = $sections->addSection(new CollectionSectionFormDTO(
+    collectionId: $collectionId,
+    parent: null,
+    code: 'technology',
+    name: 'Technology',
+    description: 'Section description',
+    active: true,
+    sort: 100,
+    metadata: ['seo' => ['title' => 'Technology news']],
+));
+
+$section = $sections->findSection($collectionId, $sectionId);
+$path = $sections->getPath($collectionId, $sectionId);
+$resolved = $sections->resolvePath($collectionId, ['technology', 'php']);
+$tree = $sections->getTree($collectionId);
+
+$page = $collections->getPage(new ContentCollectionItemQuery(
+    collectionId: $collectionId,
+    sectionId: $sectionId,
+    includeSubsections: true,
+));
+```
+
+`findSection()` возвращает null для отсутствующего или чужого раздела. `getPath()` возвращает
+путь от корня до самого раздела; для отсутствующего или чужого раздела — пустой список.
+`resolvePath()` принимает полную цепочку кодов от корня, не ищет совпадения только по последнему
+коду и возвращает null, если цепочка не разрешается; пустая цепочка также даёт null.
+Некорректные сегменты пути дают `InvalidArgumentException`.
+
+`getTree()` возвращает плоский список `CollectionSectionTreeNodeDTO` в порядке обхода дерева.
+В каждом узле: `section`, `depth`, `items` (только свой раздел), `itemsInSubtree` (с потомками).
+Порядок соседей — sort, name, id. Количества включают скрытые и запланированные записи,
+как в админке; для публичных количеств используйте `countItems()` с нужным запросом.
+Дерево и количества загружаются одним запросом, без отдельного запроса на каждый раздел.
+
+### Область выборки записей
+
+- Вся коллекция: `sectionId: null` (по умолчанию), включая записи без раздела.
+- Только записи без раздела: `withoutSection: true`.
+- Только выбранный раздел: `sectionId: $id`, `includeSubsections: false`.
+- Выбранный раздел со всеми потомками: `sectionId: $id`, `includeSubsections: true`.
+
+Противоречивые сочетания отклоняются: `withoutSection` вместе с `sectionId` или
+`includeSubsections`, а также `includeSubsections` без раздела. Неизвестный или чужой ID
+поддерева даёт пустую выборку. `countItems()`, `getItems()` и `getPage()` используют одну
+область; фильтр раздела в админке включает то же поддерево.
+
+### Сохранение, перемещение и метаданные
+
+`addSection()` возвращает ID. `updateSection($id, $form)` заменяет форму целиком, включая
+описание и метаданные. Для перемещения передайте новый `parent`, для переноса в корень — null.
+Родитель должен существовать в той же коллекции. Перенос раздела в себя, в потомка или между
+коллекциями отклоняется; обновление отсутствующего ID не создаёт новый раздел.
+
+Коды уникальны среди соседей. Проверки и запись выполняются в одной транзакции под блокировкой
+коллекции: параллельные перемещения не образуют цикл, параллельное создание корневых разделов
+не создаёт одинаковые коды. Ошибки полей приходят в `CollectionSectionFormException::errors`,
+дубликат кода — `CollectionSectionCodeAlreadyExistsException`, конфликт транзакций —
+`CollectionWriteConflictException`. Внешняя транзакция может откатить сохранение.
+
+`metadata` — ассоциативный массив с именованными ключами и JSON-совместимыми значениями;
+пустой массив очищает настройки. Объекты PHP и ресурсы не принимаются, сериализованный объём
+ограничен 65535 байтами, глубина — 32 уровнями. Описание сохраняется без HTML-экранирования:
+при выводе текста используйте Twig, при выводе HTML — штатный рендерер контента.
+
+В форме раздела доступны выбор родителя и поле JSON-объекта метаданных. Раздел и его потомки
+исключены из списка родителей; поддельный POST проверяется тем же use case, что API.
+Исторический `importSection()` также использует это сохранение и сохраняет исходные даты.
+Для хранения метаданных добавлена миграция `add_metadata_to_collection_sections`;
+на существующем сайте примените её через штатное обновление системы.
+
+`deleteSection($collectionId, $id)` проверяет принадлежность коллекции и удаляет поддерево
+от листьев к корню в общей транзакции. Записи сохраняются и становятся записями без раздела.
